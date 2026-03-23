@@ -291,7 +291,7 @@ input,textarea,button{font-family:inherit;}
 <div class="toast" id="toast"></div>
 
 <script>
-const WEB_APP_URL='https://script.google.com/macros/s/AKfycbwq7eN8knsmKoQtIx8bXVce6cV64-R2JqiAOtzy8z6uD1Dvts_RgQLUU3zCDLyx2uyU/exec';
+const WEB_APP_URL='https://script.google.com/macros/s/AKfycbxb50elr8VUxvKuMRtWBBMyGKTiS8bIDRwlQolQsuTdGC_opFKKuOlc39w7zQx7B_54/exec';
 const SYSTEM_STEPS={CCTV:2,Network:3,Smart:4,Sound:5};
 const ALWAYS_FIRST=[1],ALWAYS_LAST=[6,7,8];
 let sequence=[1,6,7,8],seqIdx=0;
@@ -412,7 +412,8 @@ async function submitSurvey(){
   const data=collectData();
   const btn=$('btnNext');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Submitting...';
   let ok=false;
-  if(navigator.onLine){try{await sendJSONP(data);ok=true;}catch(e){ok=false;}}
+  // Always try to submit — don't rely on navigator.onLine (it's unreliable)
+  try{await sendJSONP(data);ok=true;}catch(e){ok=false;console.log('JSONP failed:',e.message);}
   if(!ok)saveOffline(data);
   try{localStorage.removeItem('vyra_draft');}catch(e){}
   renderSummary(data);
@@ -452,7 +453,7 @@ window.addEventListener('online',()=>{showToast('Back online — syncing...');fl
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 
 loadDraft();buildSequence();showStep(sequence[0]);updateUI();
-if(navigator.onLine)flushQueue();
+if(navigator.onLine)flushQueue();else flushQueue();
 </script>
 </body>
 </html>
