@@ -40,21 +40,21 @@ body{font-family:'Montserrat',sans-serif;background:#e8edf5;min-height:100vh;pad
 .doc-title::after{content:'';display:block;width:60px;height:2px;background:#5FAEB6;margin:6px auto 0;}
 
 /* ─── META BAR ─── */
-.meta-bar{background:#19224A;margin:0 32px 0;border-radius:8px;padding:10px 16px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;}
-.meta-row{display:flex;gap:6px;align-items:baseline;font-size:10.5px;padding:2px 0;}
+.meta-bar{background:#19224A;margin:0 32px 0;border-radius:8px;padding:12px 16px;display:grid;grid-template-columns:1fr 1fr;gap:5px 24px;}
+.meta-row{display:flex;gap:6px;align-items:baseline;font-size:11.5px;padding:2px 0;}
 .meta-label{font-weight:700;color:#6FC7D1;white-space:nowrap;}
 .meta-value{color:#fff;font-weight:500;}
 
 /* ─── SECTIONS ─── */
 .sections{padding:16px 32px 0;}
 .section{margin-bottom:14px;break-inside:avoid;page-break-inside:avoid;}
-.sec-title{background:#19224A;color:#6FC7D1;padding:7px 14px;font-size:9.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-radius:4px 4px 0 0;}
+.sec-title{background:#19224A;color:#6FC7D1;padding:8px 14px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;border-radius:4px 4px 0 0;}
 .sec-table{width:100%;border-collapse:collapse;border:1px solid #A9D1DA;border-top:none;}
 .sec-table tr{border-bottom:1px solid #e5edf5;}
 .sec-table tr:last-child{border-bottom:none;}
 .sec-table tr:nth-child(even){background:#f7fbfc;}
-.sec-key{padding:6px 12px;font-size:9.5px;font-weight:700;color:#19224A;width:35%;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px;}
-.sec-val{padding:6px 12px;font-size:10.5px;font-weight:500;color:#333;}
+.sec-key{padding:7px 14px;font-size:10.5px;font-weight:700;color:#19224A;width:35%;white-space:nowrap;text-transform:uppercase;letter-spacing:.3px;}
+.sec-val{padding:7px 14px;font-size:11.5px;font-weight:500;color:#333;}
 
 /* ─── SIGNATURE ─── */
 .sig-area{padding:14px 32px 8px;display:flex;justify-content:space-between;}
@@ -79,12 +79,46 @@ body{font-family:'Montserrat',sans-serif;background:#e8edf5;min-height:100vh;pad
 
 /* ─── PRINT ─── */
 @media print{
-  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  body{background:#fff!important;padding:0;}
-  .toolbar{display:none;}
-  .page{box-shadow:none;max-width:100%;}
-  .meta-bar,.sec-title,.footer{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}
-  @page{size:A4;margin:8mm;}
+  /* Force exact colors — override browser's "save ink" mode */
+  *{
+    -webkit-print-color-adjust:exact!important;
+    print-color-adjust:exact!important;
+    color-adjust:exact!important;
+  }
+  /* Remove screen chrome */
+  body{background:#fff!important;padding:0!important;margin:0!important;}
+  .toolbar{display:none!important;}
+  .page{
+    box-shadow:none!important;
+    max-width:100%!important;
+    width:100%!important;
+    margin:0!important;
+  }
+  /* A4, no browser margins so we control padding ourselves */
+  @page{size:A4 portrait;margin:0;}
+  /* Lock all text colors explicitly */
+  .logo-name{color:#19224A!important;}
+  .logo-tagline{color:#5FAEB6!important;}
+  .doc-title-sm{color:#19224A!important;}
+  .doc-date{color:#64748b!important;}
+  .header{border-bottom:3px solid #5FAEB6!important;}
+  .meta-bar{background:#19224A!important;}
+  .meta-label{color:#6FC7D1!important;}
+  .meta-value{color:#fff!important;}
+  .sec-title{background:#19224A!important;color:#6FC7D1!important;}
+  .sec-table{border:1px solid #A9D1DA!important;}
+  .sec-table tr{border-bottom:1px solid #e5edf5!important;}
+  .sec-table tr:nth-child(even){background:#f7fbfc!important;}
+  .sec-key{color:#19224A!important;}
+  .sec-val{color:#333!important;}
+  .sig-name{color:#19224A!important;}
+  .sig-role{color:#64748b!important;}
+  .sig-line{border-bottom:1.5px dashed #A9D1DA!important;}
+  .footer{background:#19224A!important;border-top:3px solid #5FAEB6!important;}
+  .footer-item{color:#A9D1DA!important;}
+  .footer-item b{color:#fff!important;}
+  /* Keep sections together */
+  .section{break-inside:avoid;page-break-inside:avoid;}
 }
 </style>
 </head>
@@ -92,6 +126,7 @@ body{font-family:'Montserrat',sans-serif;background:#e8edf5;min-height:100vh;pad
 
 <div class="toolbar">
   <span class="tb-title" id="toolbar-title">VYRA Systems — Site Survey Report</span>
+  <span style="font-size:11px;color:#94a3b8;background:#fff3cd;padding:4px 10px;border-radius:6px;border:1px solid #fbbf24;">⚠️ Enable <b>Background graphics</b> in print settings for colors</span>
   <button class="tb-btn btn-close" onclick="window.close()">✕ Close</button>
   <button class="tb-btn btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
 </div>
@@ -153,14 +188,14 @@ body{font-family:'Montserrat',sans-serif;background:#e8edf5;min-height:100vh;pad
       <div class="footer-item"><b>Phone:</b> +201555310349</div>
       <div class="footer-item"><b>Facebook:</b> Vyra Systems</div>
       <div class="footer-item"><b>Website:</b> Vyra-systems.com</div>
-      <div class="footer-item"><b>Email:</b> asserhegazy@vyra-systems.com</div>
+      <div class="footer-item"><b>Email:</b> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="8beaf8f8eef9e3eeeceaf1f2cbfdf2f9eaa6f8f2f8ffeee6f8a5e8e4e6">[email&#160;protected]</a></div>
       <div class="footer-item"><b>Address:</b> 21st street, New Cairo, Cairo, Egypt</div>
     </div>
   </div>
 
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 // ── Load data from localStorage ──
 const raw = localStorage.getItem('vyra_print_data');
 if (!raw) { document.body.innerHTML = '<p style="padding:40px;font-family:Montserrat,sans-serif;color:#666">No survey data found. Please print from the survey app.</p>'; }
@@ -238,12 +273,3 @@ document.getElementById('sections').innerHTML = sections.map((s,i) => `
     <div class="sec-title">${String(i+1).padStart(2,'0')} · ${s.title}</div>
     <table class="sec-table">
       ${s.rows.filter(([,v])=>v).map(([k,v])=>`
-        <tr><td class="sec-key">${k}</td><td class="sec-val">${v}</td></tr>`).join('')}
-    </table>
-  </div>`).join('');
-
-// Auto print
-window.addEventListener('load', () => setTimeout(() => window.print(), 800));
-</script>
-</body>
-</html>
