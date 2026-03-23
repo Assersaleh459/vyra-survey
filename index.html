@@ -171,8 +171,61 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 .sum-key{font-size:10.5px;color:var(--muted);letter-spacing:.3px;text-transform:uppercase;}
 .sum-val{font-size:13.5px;font-weight:500;color:var(--text);}
 .sum-val.empty{color:rgba(169,209,218,.3);font-style:italic;font-size:12px;}
-.btn-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:8px 0 20px;background:rgba(34,59,115,.5);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:8px 0 0;background:rgba(34,59,115,.5);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
 .btn-new:active{border-color:var(--accent);color:var(--accent);}
+.btn-print{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 20px;background:linear-gradient(135deg,#5FAEB6,#6FC7D1);border:none;color:#19224A;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 4px 16px rgba(95,174,182,.3);}
+.btn-print:active{opacity:.8;}
+
+/* ── PRINT STYLES ── */
+@media print {
+  body { background: #fff !important; color: #000 !important; font-family: 'Montserrat', Arial, sans-serif; }
+  .topbar, .prog-track, .steps-wrap, .navbar, .toast, .update-bar,
+  .btn-new, .btn-print { display: none !important; }
+  #summary-screen { display: block !important; height: auto !important; }
+  .sum-scroll { padding: 0 !important; overflow: visible !important; }
+  .sum-banner {
+    background: #19224A !important;
+    color: #fff !important;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .sum-banner h2 { color: #fff !important; font-size: 18px; }
+  .sum-banner p { color: #A9D1DA !important; font-size: 12px; }
+  .sum-check { display: none !important; }
+  .sum-section {
+    border: 1px solid #223B73 !important;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .sum-sec-title {
+    background: #19224A !important;
+    color: #6FC7D1 !important;
+    padding: 8px 12px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .sum-row { padding: 7px 12px; border-bottom: 1px solid #e5e7eb !important; }
+  .sum-key { font-size: 9px; color: #64748b !important; text-transform: uppercase; letter-spacing: 0.3px; }
+  .sum-val { font-size: 12px; color: #000 !important; font-weight: 500; }
+  .sum-val.empty { color: #ccc !important; }
+  /* RTL print */
+  [dir="rtl"] .sum-sec-title,
+  [dir="rtl"] .sum-key,
+  [dir="rtl"] .sum-val { text-align: right; }
+  /* Print header */
+  .print-header { display: block !important; text-align: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #19224A; }
+  .print-header h1 { font-size: 20px; font-weight: 800; color: #19224A; letter-spacing: 2px; }
+  .print-header p { font-size: 11px; color: #64748b; margin-top: 4px; }
+}
 
 /* UPDATE BAR */
 .update-bar{display:none;position:fixed;bottom:82px;left:12px;right:12px;z-index:500;background:linear-gradient(135deg,#223B73,#19224A);border:1px solid var(--accent);border-radius:14px;padding:12px 16px;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(25,34,74,.6);animation:slideUp .3s ease;}
@@ -393,12 +446,18 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 
 <div id="summary-screen">
   <div class="sum-scroll">
+    <!-- Hidden header shown only when printing -->
+    <div class="print-header" style="display:none">
+      <h1>VYRA SYSTEMS</h1>
+      <p id="print-date"></p>
+    </div>
     <div class="sum-banner" id="sum-banner">
       <div class="sum-check">✓</div>
       <h2 data-i18n="submitted">Survey Submitted</h2>
       <p data-i18n="savedSheets">Saved to Google Sheets.</p>
     </div>
     <div id="sum-content"></div>
+    <button class="btn-print" onclick="printSurvey()">🖨️ <span data-i18n="printSurvey">Print Survey</span></button>
     <button class="btn-new" onclick="newSurvey()" data-i18n="newSurvey">＋ New Survey</button>
   </div>
 </div>
@@ -469,6 +528,7 @@ const T = {
     submitted:'Survey Submitted', savedSheets:'Saved to Google Sheets successfully.',
     savedOffline:'Saved Offline', offlineMsg:'No internet. Will sync automatically when you reconnect.',
     newSurvey:'＋ New Survey',
+    printSurvey:'Print Survey',
     // Alerts
     alertFill:'Please fill Name, Phone and Location.',
     alertSystem:'Please select at least one system.',
@@ -534,6 +594,7 @@ const T = {
     submitted:'تم إرسال الاستبيان', savedSheets:'تم الحفظ في Google Sheets بنجاح.',
     savedOffline:'تم الحفظ أوفلاين', offlineMsg:'لا يوجد إنترنت. سيتم المزامنة تلقائياً عند الاتصال.',
     newSurvey:'＋ استبيان جديد',
+    printSurvey:'طباعة الاستبيان',
     // Alerts
     alertFill:'الرجاء تعبئة الاسم والهاتف والموقع.',
     alertSystem:'الرجاء اختيار نظام واحد على الأقل.',
@@ -772,7 +833,23 @@ function renderSummary(d){
   ).join('');
 }
 
-function newSurvey(){if(!confirm(lang==='ar'?'هل تريد بدء استبيان جديد؟':'Start a new survey?'))return;try{localStorage.removeItem('vyra_draft');}catch(e){}location.reload();}
+function printSurvey() {
+  // Set print date
+  const dateEl = document.getElementById('print-date');
+  if (dateEl) {
+    const now = new Date();
+    dateEl.textContent = lang === 'ar'
+      ? 'تاريخ المعاينة: ' + now.toLocaleDateString('ar-EG') + ' — ' + now.toLocaleTimeString('ar-EG', {hour:'2-digit', minute:'2-digit'})
+      : 'Survey Date: ' + now.toLocaleDateString('en-GB') + ' — ' + now.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+  }
+  window.print();
+}
+
+function newSurvey(){
+  if(!confirm(lang==='ar'?'هل تريد بدء استبيان جديد؟':'Start a new survey?'))return;
+  try{localStorage.removeItem('vyra_draft');}catch(e){}
+  location.reload();
+}
 
 let toastT;
 function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3000);}
@@ -780,7 +857,7 @@ function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add(
 window.addEventListener('online',()=>{showToast(lang==='ar'?'متصل — جاري المزامنة':'Back online — syncing…');flushQueue();});
 
 // ── VERSION ──────────────────────────────
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.3.0';
 (function(){const el=$('version-badge');if(el)el.textContent='v'+APP_VERSION;})();
 
 // ── UPDATE SYSTEM ────────────────────────
