@@ -191,15 +191,15 @@ let allRows = [];
 let currentRow = null;
 
 const COLS = {
-  date:0, name:1, phone:2, location:3, propType:4,
-  floors:5, area:6, systems:7,
-  cctvAreas:8, cctvLight:9, cctvNight:10, cctvCable:11, cctvNotes:12,
-  netRouter:13, netIssues:14, netUsage:15, netCat6:16, netPoE:17,
-  smartSys:18, smartCtrl:19,
-  soundSpace:20, soundUse:21, soundZones:22, soundNotes:23,
-  infraPower:24, infraCable:25, infraRack:26,
-  techObs:27, techRisks:28, techDesign:29,
-  action:30, tech:31  // tech name added as col 31
+  date:0, name:1, tech:2, phone:3, location:4, propType:5,
+  floors:6, area:7, systems:8,
+  cctvAreas:9, cctvLight:10, cctvNight:11, cctvCable:12, cctvNotes:13,
+  netRouter:14, netIssues:15, netUsage:16, netCat6:17, netPoE:18,
+  smartSys:19, smartCtrl:20,
+  soundSpace:21, soundUse:22, soundZones:23, soundNotes:24,
+  infraPower:25, infraCable:26, infraRack:27,
+  techObs:28, techRisks:29, techDesign:30,
+  action:31
 };
 
 async function loadData() {
@@ -292,7 +292,7 @@ function renderTable(rows) {
     <tr onclick="openModal(${allRows.indexOf(r)})">
       <td class="td-date">${formatDate(r[COLS.date])}</td>
       <td class="td-name">${r[COLS.name]||'—'}</td>
-      <td class="td-tech">${r[COLS.tech]||r[COLS.techObs]||'—'}</td>
+      <td class="td-tech">${r[COLS.tech]||'—'}</td>
       <td class="td-loc">${r[COLS.location]||'—'}</td>
       <td>${r[COLS.propType]||'—'}</td>
       <td><div class="systems-tags">${getSystemTags(r[COLS.systems])}</div></td>
