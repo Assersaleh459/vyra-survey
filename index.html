@@ -86,6 +86,20 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 .brand{font-family:'Montserrat',sans-serif;font-size:15px;font-weight:800;letter-spacing:3px;text-transform:uppercase;background:linear-gradient(135deg,#6FC7D1,#A9D1DA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
 .ver-badge{font-size:9px;font-weight:600;color:rgba(169,209,218,.45);letter-spacing:1px;}
 .topbar-mid{flex:1;}
+.tech-input{
+  height:30px;padding:0 10px;border-radius:8px;
+  background:rgba(34,59,115,.7);border:1.5px solid rgba(95,174,182,.3);
+  color:var(--text);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:500;
+  outline:none;width:130px;transition:border-color .2s,width .25s;
+}
+.tech-input:focus{border-color:var(--accent);width:150px;}
+.tech-input::placeholder{color:rgba(169,209,218,.5);}
+.tech-display{
+  font-size:11px;font-weight:600;color:var(--accent2);
+  background:rgba(34,59,115,.5);border:1px solid rgba(95,174,182,.2);
+  border-radius:8px;padding:4px 10px;max-width:140px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
 .lang-btn{height:32px;padding:0 10px;border-radius:8px;border:1.5px solid rgba(95,174,182,.35);background:rgba(34,59,115,.6);color:var(--accent2);font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all .2s;display:flex;align-items:center;gap:5px;}
 .lang-btn:active{background:rgba(95,174,182,.2);}
 .step-badge{font-size:11px;font-weight:500;color:var(--muted);background:rgba(34,59,115,.8);border:1px solid var(--border);border-radius:20px;padding:4px 10px;}
@@ -173,8 +187,13 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 .sum-val.empty{color:rgba(169,209,218,.3);font-style:italic;font-size:12px;}
 .btn-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 0;background:rgba(34,59,115,.5);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
 .btn-new:active{border-color:var(--accent);color:var(--accent);}
-.btn-print{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 20px;background:linear-gradient(135deg,#5FAEB6,#6FC7D1);border:none;color:#19224A;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 4px 16px rgba(95,174,182,.3);}
+.btn-print{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 0;background:linear-gradient(135deg,#5FAEB6,#6FC7D1);border:none;color:#19224A;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 4px 16px rgba(95,174,182,.3);}
 .btn-print:active{opacity:.8;}
+.sum-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
+.btn-quot{height:50px;border-radius:var(--r);background:rgba(34,59,115,.7);border:1.5px solid var(--accent);color:var(--accent2);font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;font-family:'Montserrat',sans-serif;}
+.btn-quot:active{background:rgba(95,174,182,.2);}
+.btn-whatsapp{height:50px;border-radius:var(--r);background:#25D366;border:none;color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;font-family:'Montserrat',sans-serif;box-shadow:0 4px 14px rgba(37,211,102,.3);}
+.btn-whatsapp:active{opacity:.8;}
 
 /* ── PRINT STYLES ── */
 @media print {
@@ -247,6 +266,8 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
   <span class="brand">VYRA</span>
   <span class="ver-badge" id="version-badge"></span>
   <div class="topbar-mid"></div>
+  <input class="tech-input" id="f-tech" type="text" data-i18n-ph="techNamePh" placeholder="👷 Your name" autocomplete="off" oninput="autosave();updateTechDisplay()"/>
+  <div class="tech-display" id="tech-display" style="display:none"></div>
   <div class="step-badge" id="step-counter"><b>1</b> / 4</div>
   <button class="lang-btn" id="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">AR</span></button>
 </div>
@@ -457,6 +478,10 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
       <p data-i18n="savedSheets">Saved to Google Sheets.</p>
     </div>
     <div id="sum-content"></div>
+    <div class="sum-actions">
+      <button class="btn-quot" onclick="openQuotation()">📄 <span data-i18n="createQuot">Create Quotation</span></button>
+      <button class="btn-whatsapp" onclick="shareWhatsApp()">💬 <span data-i18n="shareWA">Share on WhatsApp</span></button>
+    </div>
     <button class="btn-print" onclick="printSurvey()">🖨️ <span data-i18n="printSurvey">Print Survey</span></button>
     <button class="btn-new" onclick="newSurvey()" data-i18n="newSurvey">＋ New Survey</button>
   </div>
@@ -482,6 +507,7 @@ const T = {
     s7title:'Field Notes', s8title:'Next Action',
     // Step 1
     clientName:'Client Full Name', clientNamePh:'Full name',
+    techName:'Technician Name', techNamePh:'Your name',
     phone:'Phone Number', phonePh:'+20 …', location:'Location / Area', locationPh:'City, district, street',
     propType:'Property Type', floors:'Floors', floorsPh:'e.g. 3', area:'Area (m²)', areaPh:'e.g. 200',
     systemsReq:'Systems Required', selectAll:'Select all that apply', selectAllShort:'Select all',
@@ -529,8 +555,10 @@ const T = {
     savedOffline:'Saved Offline', offlineMsg:'No internet. Will sync automatically when you reconnect.',
     newSurvey:'＋ New Survey',
     printSurvey:'Print Survey',
+    createQuot:'Create Quotation',
+    shareWA:'Share on WhatsApp',
     // Alerts
-    alertFill:'Please fill Name, Phone and Location.',
+    alertFill:'Please fill Name, Technician, Phone and Location.',
     alertSystem:'Please select at least one system.',
     alertAction:'Please select the next action.',
     submitting:'Submitting…',
@@ -548,6 +576,7 @@ const T = {
     s7title:'ملاحظات الفني', s8title:'الخطوة التالية',
     // Step 1
     clientName:'اسم العميل كاملاً', clientNamePh:'الاسم الكامل',
+    techName:'اسم الفني', techNamePh:'اسمك',
     phone:'رقم الهاتف', phonePh:'٢٠+ …', location:'الموقع / المنطقة', locationPh:'المدينة، الحي، الشارع',
     propType:'نوع العقار', floors:'عدد الأدوار', floorsPh:'مثال: ٣', area:'المساحة (م²)', areaPh:'مثال: ٢٠٠',
     systemsReq:'الأنظمة المطلوبة', selectAll:'اختر كل ما ينطبق', selectAllShort:'اختر الكل',
@@ -595,8 +624,10 @@ const T = {
     savedOffline:'تم الحفظ أوفلاين', offlineMsg:'لا يوجد إنترنت. سيتم المزامنة تلقائياً عند الاتصال.',
     newSurvey:'＋ استبيان جديد',
     printSurvey:'طباعة الاستبيان',
+    createQuot:'إنشاء عرض سعر',
+    shareWA:'مشاركة على واتساب',
     // Alerts
-    alertFill:'الرجاء تعبئة الاسم والهاتف والموقع.',
+    alertFill:'الرجاء تعبئة الاسم واسم الفني والهاتف والموقع.',
     alertSystem:'الرجاء اختيار نظام واحد على الأقل.',
     alertAction:'الرجاء اختيار الخطوة التالية.',
     submitting:'جاري الإرسال…',
@@ -644,6 +675,9 @@ function applyLang() {
 
   // Update lang toggle button
   document.getElementById('lang-label').textContent = isAr ? 'EN' : 'AR';
+  // Update tech input placeholder
+  const techIn = document.getElementById('f-tech');
+  if(techIn) techIn.placeholder = '👷 ' + (T[lang]['techNamePh'] || 'Your name');
 
   // Re-render current step label (set dynamically, not via data-i18n)
   showStep(sequence[seqIdx]);
@@ -671,6 +705,11 @@ const ALWAYS_FIRST=[1],ALWAYS_LAST=[6,7,8];
 let sequence=[1,6,7,8],seqIdx=0;
 const $=id=>document.getElementById(id);
 
+function updateTechDisplay(){
+  const v=$('f-tech').value.trim();
+  $('tech-display').textContent='👷 '+(v||'—');
+}
+
 function buildSequence(){
   const sel=[...document.querySelectorAll('[name="systems"]:checked')].map(e=>e.value);
   const mid=Object.entries(SYSTEM_STEPS).filter(([k])=>sel.includes(k)).map(([,v])=>v).sort((a,b)=>a-b);
@@ -695,6 +734,17 @@ function showStep(id){
   el.classList.add('active');
   const lbl=$(`lbl-${id}`);
   if(lbl)lbl.textContent=`${t('stepOf')} ${nPad(seqIdx+1,2)} ${t('of')} ${n(sequence.length)}`;
+  // Toggle tech input: editable on step 1, display badge on all others
+  const techInput=$('f-tech');
+  const techDisplay=$('tech-display');
+  if(id===1){
+    techInput.style.display='block';
+    techDisplay.style.display='none';
+  } else {
+    techInput.style.display='none';
+    techDisplay.style.display='block';
+    techDisplay.textContent='👷 '+(techInput.value.trim()||'—');
+  }
 }
 
 function updateUI(){
@@ -711,7 +761,7 @@ function updateUI(){
 
 function validate(id){
   if(id===1){
-    if(!$('f-name').value.trim()||!$('f-phone').value.trim()||!$('f-loc').value.trim()){alert(t('alertFill'));return false;}
+    if(!$('f-name').value.trim()||!$('f-tech').value.trim()||!$('f-phone').value.trim()||!$('f-loc').value.trim()){alert(t('alertFill'));return false;}
     if(!document.querySelector('[name="systems"]:checked')){alert(t('alertSystem'));return false;}
   }
   if(id===8&&!document.querySelector('[name="nextAction"]:checked')){alert(t('alertAction'));return false;}
@@ -724,7 +774,7 @@ const val=id=>{const e=$(id);return e?e.value.trim():'';};
 
 function collectData(){
   return{
-    client:{name:val('f-name'),phone:val('f-phone'),location:val('f-loc'),propType:radio('propType'),floors:val('f-floors'),area:val('f-area'),systems:checks('systems')},
+    client:{name:val('f-name'),tech:val('f-tech'),phone:val('f-phone'),location:val('f-loc'),propType:radio('propType'),floors:val('f-floors'),area:val('f-area'),systems:checks('systems')},
     cctv:{areas:checks('cctvAreas'),light:radio('cctvLight'),night:radio('cctvNight'),cable:radio('cctvCable'),notes:val('f-cctvNotes')},
     network:{router:radio('netRouter'),issues:checks('netIssues'),highUsage:val('f-netUsage'),cat6:radio('netCat6'),poe:radio('netPoE')},
     smart:{systems:checks('smartSub'),control:radio('smartCtrl')},
@@ -744,7 +794,7 @@ function loadDraft(){
     const sv=(id,v)=>{const e=$(id);if(e&&v)e.value=v;};
     const sr=(n,v)=>{if(!v)return;const e=document.querySelector(`[name="${n}"][value="${v}"]`);if(e)e.checked=true;};
     const sc=(n,v)=>{if(!v)return;v.split(', ').forEach(x=>{const e=document.querySelector(`[name="${n}"][value="${x}"]`);if(e)e.checked=true;});};
-    const c=d.client||{};sv('f-name',c.name);sv('f-phone',c.phone);sv('f-loc',c.location);sr('propType',c.propType);sv('f-floors',c.floors);sv('f-area',c.area);sc('systems',c.systems);
+    const c=d.client||{};sv('f-name',c.name);sv('f-tech',c.tech);sv('f-phone',c.phone);sv('f-loc',c.location);sr('propType',c.propType);sv('f-floors',c.floors);sv('f-area',c.area);sc('systems',c.systems);
     const cc=d.cctv||{};sc('cctvAreas',cc.areas);sr('cctvLight',cc.light);sr('cctvNight',cc.night);sr('cctvCable',cc.cable);sv('f-cctvNotes',cc.notes);
     const n=d.network||{};sr('netRouter',n.router);sc('netIssues',n.issues);sv('f-netUsage',n.highUsage);sr('netCat6',n.cat6);sr('netPoE',n.poe);
     const sm=d.smart||{};sc('smartSub',sm.systems);sr('smartCtrl',sm.control);
@@ -804,7 +854,7 @@ function renderSummary(d){
   const tl=T[lang];
   const all=[
     {always:true,title:tl.s1title,rows:[
-      [tl.clientName,d.client.name],[tl.phone,d.client.phone],[tl.location,d.client.location],
+      [tl.clientName,d.client.name],[tl.techName,d.client.tech],[tl.phone,d.client.phone],[tl.location,d.client.location],
       [tl.propType,d.client.propType],[tl.floors,d.client.floors],[tl.area,d.client.area+' m\u00b2'],
       [tl.systemsReq,d.client.systems]
     ]},
@@ -833,6 +883,56 @@ function renderSummary(d){
   ).join('');
 }
 
+function openQuotation() {
+  const data = collectData();
+  const c = data.client;
+  const params = new URLSearchParams({
+    name:    c.name    || '',
+    phone:   c.phone   || '',
+    address: c.location|| '',
+    tech:    c.tech    || '',
+    systems: c.systems || ''
+  });
+  window.open('quotation.html?' + params.toString(), '_blank');
+}
+
+function shareWhatsApp() {
+  const data = collectData();
+  const c = data.client;
+  const isAr = lang === 'ar';
+  const sys = c.systems || '';
+  const lines = isAr ? [
+    '🔵 *VYRA Systems — معاينة موقع*',
+    '',
+    `👤 *العميل:* ${c.name}`,
+    `👷 *الفني:* ${c.tech}`,
+    `📞 *الهاتف:* ${c.phone}`,
+    `📍 *الموقع:* ${c.location}`,
+    `🏠 *النوع:* ${c.propType}`,
+    `⚙️ *الأنظمة:* ${sys}`,
+    '',
+    `📋 *الإجراء التالي:* ${data.next.action}`,
+    '',
+    '_تم إرسال التفاصيل الكاملة إلى Google Sheets_'
+  ] : [
+    '🔵 *VYRA Systems — Site Survey*',
+    '',
+    `👤 *Client:* ${c.name}`,
+    `👷 *Technician:* ${c.tech}`,
+    `📞 *Phone:* ${c.phone}`,
+    `📍 *Location:* ${c.location}`,
+    `🏠 *Property:* ${c.propType}`,
+    `⚙️ *Systems:* ${sys}`,
+    '',
+    `📋 *Next Action:* ${data.next.action}`,
+    '',
+    '_Full details saved to Google Sheets_'
+  ];
+  const msg = encodeURIComponent(lines.join('\n'));
+  window.open('https://wa.me/?text=' + msg, '_blank');
+}
+
+
 function printSurvey() {
   // Set print date
   const dateEl = document.getElementById('print-date');
@@ -857,7 +957,7 @@ function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add(
 window.addEventListener('online',()=>{showToast(lang==='ar'?'متصل — جاري المزامنة':'Back online — syncing…');flushQueue();});
 
 // ── VERSION ──────────────────────────────
-const APP_VERSION = '2.4.0';
+const APP_VERSION = '3.3.0';
 (function(){const el=$('version-badge');if(el)el.textContent='v'+APP_VERSION;})();
 
 // ── UPDATE SYSTEM ────────────────────────
