@@ -725,7 +725,7 @@ function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add(
 window.addEventListener('online',()=>{showToast(lang==='ar'?'متصل — جاري المزامنة':'Back online — syncing…');flushQueue();});
 
 // ── VERSION ──────────────────────────────
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 (function(){const el=$('version-badge');if(el)el.textContent='v'+APP_VERSION;})();
 
 // ── UPDATE SYSTEM ────────────────────────
@@ -735,22 +735,32 @@ function applyUpdate(){if(pendingWorker)pendingWorker.postMessage({action:'skipW
 if('serviceWorker' in navigator){
   window.addEventListener('load', async ()=>{
     try{
-      const regs=await navigator.serviceWorker.getRegistrations();
-      for(const r of regs)await r.unregister();
-      const reg=await navigator.serviceWorker.register('sw.js');
+      // Register SW — no unregister, that breaks update detection
+      const reg = await navigator.serviceWorker.register('sw.js');
+
+      // Check for update immediately, then every 60 seconds
       reg.update();
-      setInterval(()=>reg.update(),30000);
-      reg.addEventListener('updatefound',()=>{
-        const nw=reg.installing;
-        nw.addEventListener('statechange',()=>{
-          if(nw.state==='installed'&&navigator.serviceWorker.controller){
-            pendingWorker=nw;
-            const bar=$('update-bar');if(bar)bar.classList.add('show');
+      setInterval(()=>reg.update(), 60000);
+
+      // New SW found — wait for it to install, then show banner
+      reg.addEventListener('updatefound', ()=>{
+        const nw = reg.installing;
+        nw.addEventListener('statechange', ()=>{
+          if(nw.state === 'installed' && navigator.serviceWorker.controller){
+            // New version ready — show update banner
+            pendingWorker = nw;
+            const bar = $('update-bar');
+            if(bar) bar.classList.add('show');
           }
         });
       });
-      navigator.serviceWorker.addEventListener('controllerchange',()=>window.location.reload(true));
-    }catch(e){}
+
+      // When new SW takes control — reload to apply changes
+      navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+        window.location.reload(true);
+      });
+
+    }catch(e){ console.log('SW error:', e); }
   });
 }
 
