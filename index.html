@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#0e1117"/>
+<meta name="description" content="VYRA Systems Professional Site Survey"/>
+<link rel="manifest" href="manifest.json"/>
+<title>VYRA Site Survey</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0e1117;color:#e2e8f0;display:flex;flex-direction:column;}
+input,textarea,button{font-family:inherit;}
+:root{--bg:#0e1117;--surface:#161c27;--card:#1c2333;--border:#2a3449;--accent:#f59e0b;--adim:rgba(245,158,11,.15);--text:#e2e8f0;--muted:#64748b;--light:#94a3b8;--green:#22c55e;--red:#ef4444;--r:12px;}
+.topbar{flex-shrink:0;height:54px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.brand{font-size:14px;font-weight:700;color:var(--accent);letter-spacing:2px;}
+.step-badge{margin-left:auto;font-size:11px;font-weight:600;color:var(--muted);background:var(--card);border:1px solid var(--border);border-radius:20px;padding:3px 10px;}
+.step-badge b{color:var(--text);}
+.prog-track{flex-shrink:0;height:3px;background:var(--border);}
+.prog-fill{height:100%;background:var(--accent);border-radius:0 2px 2px 0;transition:width .4s ease;}
+.steps-wrap{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;}
+.step{display:none;padding:20px 16px 24px;animation:fi .22s ease;}
+.step.active{display:block;}
+@keyframes fi{from{opacity:0;transform:translateX(14px);}to{opacity:1;transform:translateX(0);}}
+.step-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+.step-ico{width:42px;height:42px;border-radius:11px;background:var(--adim);border:1px solid rgba(245,158,11,.25);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.step-num{font-size:10px;font-weight:600;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-bottom:2px;}
+.step-name{font-size:17px;font-weight:700;letter-spacing:-.3px;}
+.qblock{margin-bottom:18px;}
+.qlabel{font-size:13px;font-weight:600;color:var(--light);margin-bottom:9px;display:flex;align-items:baseline;gap:5px;}
+.qreq{color:var(--accent);}
+.qhint{font-size:10px;color:var(--muted);font-weight:400;margin-left:4px;}
+.finput{width:100%;height:52px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:16px;padding:0 14px;outline:none;transition:border-color .15s;}
+.finput:focus{border-color:var(--accent);}
+.finput::placeholder{color:var(--muted);}
+.ftextarea{width:100%;min-height:80px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);color:var(--text);font-size:15px;padding:12px 14px;outline:none;resize:none;line-height:1.5;transition:border-color .15s;}
+.ftextarea:focus{border-color:var(--accent);}
+.ftextarea::placeholder{color:var(--muted);}
+.irow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tiles{display:flex;flex-direction:column;gap:8px;}
+.tiles.col2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.tiles.col3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.tile{position:relative;cursor:pointer;}
+.tile input{position:absolute;opacity:0;pointer-events:none;width:0;height:0;}
+.tile-body{display:flex;align-items:center;gap:10px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:13px 14px;min-height:50px;transition:border-color .15s,background .15s;}
+.tiles.col2 .tile-body,.tiles.col3 .tile-body{flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:12px 6px;min-height:58px;}
+.tile-mark{width:18px;height:18px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;transition:all .15s;}
+.tile-sq{width:18px;height:18px;border-radius:5px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent;transition:all .15s;}
+.tiles.col2 .tile-mark,.tiles.col2 .tile-sq,.tiles.col3 .tile-mark,.tiles.col3 .tile-sq{display:none;}
+.tile-lbl{font-size:13.5px;font-weight:500;color:var(--light);line-height:1.3;}
+.tiles.col2 .tile-lbl,.tiles.col3 .tile-lbl{font-size:12px;color:var(--muted);}
+.tile input:checked~.tile-body{border-color:var(--accent);background:var(--adim);}
+.tile input:checked~.tile-body .tile-mark{border-color:var(--accent);background:var(--accent);}
+.tile input:checked~.tile-body .tile-sq{border-color:var(--accent);background:var(--accent);color:#0e1117;}
+.tile input:checked~.tile-body .tile-lbl{color:var(--text);}
+.yesno{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.tile.yes input:checked~.tile-body{border-color:var(--green);background:rgba(34,197,94,.12);}
+.tile.yes input:checked~.tile-body .tile-lbl{color:var(--green);}
+.tile.no input:checked~.tile-body{border-color:var(--red);background:rgba(239,68,68,.12);}
+.tile.no input:checked~.tile-body .tile-lbl{color:var(--red);}
+.navbar{flex-shrink:0;height:72px;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;padding:10px 16px 16px;gap:10px;}
+.btn-back{height:50px;padding:0 18px;border-radius:var(--r);background:transparent;border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.btn-next{flex:1;height:50px;border-radius:var(--r);background:var(--accent);border:none;color:#0e1117;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 18px rgba(245,158,11,.3);}
+.btn-submit{flex:1;height:50px;border-radius:var(--r);background:linear-gradient(135deg,var(--green),#16a34a);border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 18px rgba(34,197,94,.25);}
+.btn-back:active,.btn-next:active,.btn-submit:active{opacity:.75;}
+.spinner{width:16px;height:16px;border:2px solid rgba(0,0,0,.2);border-top-color:#0e1117;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle;}
+@keyframes spin{to{transform:rotate(360deg);}}
+#summary-screen{display:none;flex-direction:column;height:100%;}
+#summary-screen.active{display:flex;}
+.sum-scroll{flex:1;overflow-y:auto;padding:20px 16px 24px;}
+.sum-banner{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px 20px;text-align:center;margin-bottom:20px;}
+.sum-check{width:58px;height:58px;border-radius:50%;background:rgba(34,197,94,.12);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;}
+.sum-banner h2{font-size:20px;font-weight:700;margin-bottom:6px;}
+.sum-banner p{font-size:13px;color:var(--muted);}
+.sum-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:12px;}
+.sum-sec-title{padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--accent);letter-spacing:1px;text-transform:uppercase;}
+.sum-row{padding:10px 16px;border-bottom:1px solid rgba(42,52,73,.5);display:flex;flex-direction:column;gap:2px;}
+.sum-row:last-child{border-bottom:none;}
+.sum-key{font-size:11px;color:var(--muted);}
+.sum-val{font-size:13.5px;font-weight:500;}
+.sum-val.empty{color:var(--border);font-style:italic;font-size:12px;}
+.btn-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:8px 0 20px;background:var(--card);border:1.5px solid var(--border);color:var(--light);font-size:14px;font-weight:600;cursor:pointer;}
+.toast{position:fixed;top:64px;left:50%;transform:translateX(-50%) translateY(-8px);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:7px 16px;font-size:11px;color:var(--light);opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;z-index:999;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <span class="brand">VYRA</span>
+  <div style="flex:1"></div>
+  <div class="step-badge" id="step-counter"><b>1</b> / 4</div>
+</div>
+<div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+
+<div class="steps-wrap" id="steps-wrap">
+
+<!-- STEP 1 -->
+<div class="step active" id="step-1">
+  <div class="step-hdr"><div class="step-ico">👤</div><div><div class="step-num" id="lbl-1">Step 01</div><div class="step-name">Client &amp; Property</div></div></div>
+  <div class="qblock"><div class="qlabel">Client Full Name <span class="qreq">*</span></div><input class="finput" id="f-name" type="text" placeholder="Full name" autocomplete="off"/></div>
+  <div class="qblock"><div class="qlabel">Phone Number <span class="qreq">*</span></div><input class="finput" id="f-phone" type="tel" placeholder="+20 …"/></div>
+  <div class="qblock"><div class="qlabel">Location / Area <span class="qreq">*</span></div><input class="finput" id="f-loc" type="text" placeholder="City, district, street"/></div>
+  <div class="qblock">
+    <div class="qlabel">Property Type</div>
+    <div class="tiles col3">
+      <label class="tile"><input type="radio" name="propType" value="Apartment"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Apartment</span></span></label>
+      <label class="tile"><input type="radio" name="propType" value="Villa"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Villa</span></span></label>
+      <label class="tile"><input type="radio" name="propType" value="Office"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Office</span></span></label>
+      <label class="tile"><input type="radio" name="propType" value="Shop"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Shop</span></span></label>
+      <label class="tile"><input type="radio" name="propType" value="Warehouse"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Warehouse</span></span></label>
+      <label class="tile"><input type="radio" name="propType" value="Other"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Other</span></span></label>
+    </div>
+  </div>
+  <div class="irow">
+    <div class="qblock"><div class="qlabel">Floors</div><input class="finput" id="f-floors" type="number" placeholder="e.g. 3" inputmode="numeric"/></div>
+    <div class="qblock"><div class="qlabel">Area (m²)</div><input class="finput" id="f-area" type="number" placeholder="e.g. 200" inputmode="numeric"/></div>
+  </div>
+  <div class="qblock">
+    <div class="qlabel">Systems Required <span class="qreq">*</span><span class="qhint">Select all that apply</span></div>
+    <div class="tiles">
+      <label class="tile"><input type="checkbox" name="systems" value="CCTV"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">📷 CCTV Surveillance</span></span></label>
+      <label class="tile"><input type="checkbox" name="systems" value="Network"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🌐 Networking &amp; Wi-Fi</span></span></label>
+      <label class="tile"><input type="checkbox" name="systems" value="Smart"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🏠 Smart Home / Building</span></span></label>
+      <label class="tile"><input type="checkbox" name="systems" value="Sound"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🔊 Sound System</span></span></label>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 2: CCTV -->
+<div class="step" id="step-2">
+  <div class="step-hdr"><div class="step-ico">📷</div><div><div class="step-num" id="lbl-2">Step 02</div><div class="step-name">CCTV Survey</div></div></div>
+  <div class="qblock">
+    <div class="qlabel">Coverage Areas <span class="qhint">Select all</span></div>
+    <div class="tiles col2">
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Main Entrance"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Main Entrance</span></span></label>
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Back Entrance"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Back Entrance</span></span></label>
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Garage"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Garage</span></span></label>
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Garden"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Garden</span></span></label>
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Corridors"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Corridors</span></span></label>
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Perimeter"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Perimeter</span></span></label>
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Office Areas"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Office Areas</span></span></label>
+      <label class="tile"><input type="checkbox" name="cctvAreas" value="Warehouse"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Warehouse</span></span></label>
+    </div>
+  </div>
+  <div class="qblock">
+    <div class="qlabel">Lighting Conditions</div>
+    <div class="tiles">
+      <label class="tile"><input type="radio" name="cctvLight" value="Good"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Good / Normal</span></span></label>
+      <label class="tile"><input type="radio" name="cctvLight" value="Low Light"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Low light / dim</span></span></label>
+      <label class="tile"><input type="radio" name="cctvLight" value="Direct Sunlight"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Direct sunlight / glare</span></span></label>
+    </div>
+  </div>
+  <div class="irow">
+    <div class="qblock"><div class="qlabel">Night monitoring?</div><div class="yesno"><label class="tile yes"><input type="radio" name="cctvNight" value="Yes"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Yes</span></span></label><label class="tile no"><input type="radio" name="cctvNight" value="No"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">No</span></span></label></div></div>
+    <div class="qblock"><div class="qlabel">Cable routing?</div><div class="yesno"><label class="tile yes"><input type="radio" name="cctvCable" value="Yes"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Yes</span></span></label><label class="tile no"><input type="radio" name="cctvCable" value="No"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">No</span></span></label></div></div>
+  </div>
+  <div class="qblock"><div class="qlabel">CCTV Notes</div><textarea class="ftextarea" id="f-cctvNotes" placeholder="Blind spots, unusual conditions…"></textarea></div>
+</div>
+
+<!-- STEP 3: NETWORK -->
+<div class="step" id="step-3">
+  <div class="step-hdr"><div class="step-ico">🌐</div><div><div class="step-num" id="lbl-3">Step 03</div><div class="step-name">Network &amp; Wi-Fi</div></div></div>
+  <div class="qblock"><div class="qlabel">Existing router / ISP line?</div><div class="yesno"><label class="tile yes"><input type="radio" name="netRouter" value="Yes"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Yes</span></span></label><label class="tile no"><input type="radio" name="netRouter" value="No"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">No</span></span></label></div></div>
+  <div class="qblock">
+    <div class="qlabel">Main Issues <span class="qhint">Select all</span></div>
+    <div class="tiles col2">
+      <label class="tile"><input type="checkbox" name="netIssues" value="Weak Signal"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Weak Signal</span></span></label>
+      <label class="tile"><input type="checkbox" name="netIssues" value="Disconnections"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Disconnections</span></span></label>
+      <label class="tile"><input type="checkbox" name="netIssues" value="Slow Speed"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Slow Speed</span></span></label>
+      <label class="tile"><input type="checkbox" name="netIssues" value="Dead Zones"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Dead Zones</span></span></label>
+    </div>
+  </div>
+  <div class="qblock"><div class="qlabel">High-usage areas</div><textarea class="ftextarea" id="f-netUsage" placeholder="e.g. Conference room, server room…"></textarea></div>
+  <div class="irow">
+    <div class="qblock"><div class="qlabel">Cat6 cabling?</div><div class="yesno"><label class="tile yes"><input type="radio" name="netCat6" value="Yes"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Yes</span></span></label><label class="tile no"><input type="radio" name="netCat6" value="No"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">No</span></span></label></div></div>
+    <div class="qblock"><div class="qlabel">PoE switch?</div><div class="yesno"><label class="tile yes"><input type="radio" name="netPoE" value="Yes"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Yes</span></span></label><label class="tile no"><input type="radio" name="netPoE" value="No"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">No</span></span></label></div></div>
+  </div>
+</div>
+
+<!-- STEP 4: SMART -->
+<div class="step" id="step-4">
+  <div class="step-hdr"><div class="step-ico">🏠</div><div><div class="step-num" id="lbl-4">Step 04</div><div class="step-name">Smart System</div></div></div>
+  <div class="qblock">
+    <div class="qlabel">Required Sub-systems <span class="qhint">Select all</span></div>
+    <div class="tiles col2">
+      <label class="tile"><input type="checkbox" name="smartSub" value="Lighting"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">💡 Lighting</span></span></label>
+      <label class="tile"><input type="checkbox" name="smartSub" value="AC Control"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">❄️ AC Control</span></span></label>
+      <label class="tile"><input type="checkbox" name="smartSub" value="Cameras"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">📷 Cameras</span></span></label>
+      <label class="tile"><input type="checkbox" name="smartSub" value="Motion"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🚶 Motion</span></span></label>
+      <label class="tile"><input type="checkbox" name="smartSub" value="Door Sensors"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🚪 Door Sensors</span></span></label>
+      <label class="tile"><input type="checkbox" name="smartSub" value="Gas Sensor"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🔥 Gas Sensor</span></span></label>
+      <label class="tile"><input type="checkbox" name="smartSub" value="Water Leak"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">💧 Water Leak</span></span></label>
+    </div>
+  </div>
+  <div class="qblock">
+    <div class="qlabel">Control Method</div>
+    <div class="tiles">
+      <label class="tile"><input type="radio" name="smartCtrl" value="Mobile App"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Mobile App only</span></span></label>
+      <label class="tile"><input type="radio" name="smartCtrl" value="Wall Panel"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Wall Panel only</span></span></label>
+      <label class="tile"><input type="radio" name="smartCtrl" value="Both"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Both — App &amp; Panel</span></span></label>
+    </div>
+  </div>
+</div>
+
+<!-- STEP 5: SOUND -->
+<div class="step" id="step-5">
+  <div class="step-hdr"><div class="step-ico">🔊</div><div><div class="step-num" id="lbl-5">Step 05</div><div class="step-name">Sound System</div></div></div>
+  <div class="qblock">
+    <div class="qlabel">Space Type</div>
+    <div class="tiles col2">
+      <label class="tile"><input type="radio" name="soundSpace" value="Office"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Office</span></span></label>
+      <label class="tile"><input type="radio" name="soundSpace" value="Shop"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Shop</span></span></label>
+      <label class="tile"><input type="radio" name="soundSpace" value="Villa"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Villa</span></span></label>
+      <label class="tile"><input type="radio" name="soundSpace" value="Outdoor"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Outdoor</span></span></label>
+    </div>
+  </div>
+  <div class="qblock">
+    <div class="qlabel">Audio Use <span class="qhint">Select all</span></div>
+    <div class="tiles">
+      <label class="tile"><input type="checkbox" name="soundUse" value="Background Music"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🎵 Background Music</span></span></label>
+      <label class="tile"><input type="checkbox" name="soundUse" value="Announcements"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">📢 Announcements / PA</span></span></label>
+      <label class="tile"><input type="checkbox" name="soundUse" value="General Sound"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">🔈 General Sound</span></span></label>
+    </div>
+  </div>
+  <div class="qblock"><div class="qlabel">Multiple zones?</div><div class="yesno"><label class="tile yes"><input type="radio" name="soundZones" value="Yes"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Yes</span></span></label><label class="tile no"><input type="radio" name="soundZones" value="No"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">No</span></span></label></div></div>
+  <div class="qblock"><div class="qlabel">Sound Notes</div><textarea class="ftextarea" id="f-soundNotes" placeholder="Room size, ceiling type…"></textarea></div>
+</div>
+
+<!-- STEP 6: INFRASTRUCTURE -->
+<div class="step" id="step-6">
+  <div class="step-hdr"><div class="step-ico">⚡</div><div><div class="step-num" id="lbl-6">Step 06</div><div class="step-name">Infrastructure</div></div></div>
+  <div class="qblock">
+    <div class="qlabel">Power Availability</div>
+    <div class="tiles">
+      <label class="tile"><input type="radio" name="infraPower" value="Good"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Good — sufficient power points</span></span></label>
+      <label class="tile"><input type="radio" name="infraPower" value="Limited"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Limited — additional wiring needed</span></span></label>
+    </div>
+  </div>
+  <div class="qblock">
+    <div class="qlabel">Cable Routing Paths <span class="qhint">Select all</span></div>
+    <div class="tiles col3">
+      <label class="tile"><input type="checkbox" name="infraCable" value="Ceiling"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Ceiling</span></span></label>
+      <label class="tile"><input type="checkbox" name="infraCable" value="Walls"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">Walls</span></span></label>
+      <label class="tile"><input type="checkbox" name="infraCable" value="External"/><span class="tile-body"><span class="tile-sq">✓</span><span class="tile-lbl">External</span></span></label>
+    </div>
+  </div>
+  <div class="qblock"><div class="qlabel">Network rack needed?</div><div class="yesno"><label class="tile yes"><input type="radio" name="infraRack" value="Yes"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">Yes</span></span></label><label class="tile no"><input type="radio" name="infraRack" value="No"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">No</span></span></label></div></div>
+</div>
+
+<!-- STEP 7: FIELD NOTES -->
+<div class="step" id="step-7">
+  <div class="step-hdr"><div class="step-ico">🔧</div><div><div class="step-num" id="lbl-7">Step 07</div><div class="step-name">Field Notes</div></div></div>
+  <div class="qblock"><div class="qlabel">Key Observations</div><textarea class="ftextarea" id="f-obs" placeholder="Site conditions, access points…" rows="3"></textarea></div>
+  <div class="qblock"><div class="qlabel">Risks &amp; Challenges</div><textarea class="ftextarea" id="f-risks" placeholder="Installation risks, limitations…" rows="3"></textarea></div>
+  <div class="qblock"><div class="qlabel">Suggested Design</div><textarea class="ftextarea" id="f-design" placeholder="Recommended layout, equipment…" rows="3"></textarea></div>
+</div>
+
+<!-- STEP 8: NEXT ACTION -->
+<div class="step" id="step-8">
+  <div class="step-hdr"><div class="step-ico">🚀</div><div><div class="step-num" id="lbl-8">Step 08</div><div class="step-name">Next Action</div></div></div>
+  <div class="qblock">
+    <div class="qlabel">Action After This Survey <span class="qreq">*</span></div>
+    <div class="tiles">
+      <label class="tile"><input type="radio" name="nextAction" value="Send Quotation"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">📄 Send formal quotation to client</span></span></label>
+      <label class="tile"><input type="radio" name="nextAction" value="Follow-up Visit"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">📅 Schedule a follow-up visit</span></span></label>
+      <label class="tile"><input type="radio" name="nextAction" value="Waiting for Client"/><span class="tile-body"><span class="tile-mark"></span><span class="tile-lbl">⏳ Waiting for client decision</span></span></label>
+    </div>
+  </div>
+</div>
+
+</div><!-- /steps-wrap -->
+
+<div class="navbar" id="navBar">
+  <button class="btn-back" id="btnBack" onclick="goBack()" style="display:none">← Back</button>
+  <button class="btn-next" id="btnNext" onclick="goNext()">Continue →</button>
+</div>
+
+<div id="summary-screen">
+  <div class="sum-scroll">
+    <div class="sum-banner" id="sum-banner"><div class="sum-check">✓</div><h2>Survey Submitted</h2><p>Saved to Google Sheets.</p></div>
+    <div id="sum-content"></div>
+    <button class="btn-new" onclick="newSurvey()">＋ New Survey</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const WEB_APP_URL='https://script.google.com/macros/s/AKfycbwq7eN8knsmKoQtIx8bXVce6cV64-R2JqiAOtzy8z6uD1Dvts_RgQLUU3zCDLyx2uyU/exec';
+const SYSTEM_STEPS={CCTV:2,Network:3,Smart:4,Sound:5};
+const ALWAYS_FIRST=[1],ALWAYS_LAST=[6,7,8];
+let sequence=[1,6,7,8],seqIdx=0;
+const $=id=>document.getElementById(id);
+
+function buildSequence(){
+  const sel=[...document.querySelectorAll('[name="systems"]:checked')].map(e=>e.value);
+  const mid=Object.entries(SYSTEM_STEPS).filter(([k])=>sel.includes(k)).map(([,v])=>v).sort((a,b)=>a-b);
+  sequence=[...ALWAYS_FIRST,...mid,...ALWAYS_LAST];
+}
+
+function goNext(){
+  const id=sequence[seqIdx];
+  if(!validate(id))return;
+  if(id===1)buildSequence();
+  if(seqIdx<sequence.length-1){seqIdx++;showStep(sequence[seqIdx]);updateUI();autosave();$('steps-wrap').scrollTop=0;}
+  else submitSurvey();
+}
+
+function goBack(){
+  if(seqIdx>0){seqIdx--;showStep(sequence[seqIdx]);updateUI();$('steps-wrap').scrollTop=0;}
+}
+
+function showStep(id){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  const el=$(`step-${id}`);if(!el)return;
+  el.classList.add('active');
+  const lbl=$(`lbl-${id}`);
+  if(lbl)lbl.textContent=`Step ${String(seqIdx+1).padStart(2,'0')} of ${sequence.length}`;
+}
+
+function updateUI(){
+  const pos=seqIdx+1,total=sequence.length;
+  $('step-counter').innerHTML=`<b>${pos}</b> / ${total}`;
+  $('prog-fill').style.width=`${(pos/total)*100}%`;
+  $('btnBack').style.display=seqIdx>0?'flex':'none';
+  const isLast=seqIdx===sequence.length-1;
+  const btn=$('btnNext');
+  if(isLast){btn.innerHTML='Submit Survey ✓';btn.className='btn-submit';btn.onclick=submitSurvey;}
+  else{btn.innerHTML='Continue →';btn.className='btn-next';btn.onclick=goNext;}
+}
+
+function validate(id){
+  if(id===1){
+    if(!$('f-name').value.trim()||!$('f-phone').value.trim()||!$('f-loc').value.trim()){alert('Please fill Name, Phone and Location.');return false;}
+    if(!document.querySelector('[name="systems"]:checked')){alert('Please select at least one system.');return false;}
+  }
+  if(id===8&&!document.querySelector('[name="nextAction"]:checked')){alert('Please select the next action.');return false;}
+  return true;
+}
+
+const radio=n=>{const e=document.querySelector(`[name="${n}"]:checked`);return e?e.value:'';};
+const checks=n=>[...document.querySelectorAll(`[name="${n}"]:checked`)].map(e=>e.value).join(', ')||'';
+const val=id=>{const e=$(id);return e?e.value.trim():'';};
+
+function collectData(){
+  return{
+    client:{name:val('f-name'),phone:val('f-phone'),location:val('f-loc'),propType:radio('propType'),floors:val('f-floors'),area:val('f-area'),systems:checks('systems')},
+    cctv:{areas:checks('cctvAreas'),light:radio('cctvLight'),night:radio('cctvNight'),cable:radio('cctvCable'),notes:val('f-cctvNotes')},
+    network:{router:radio('netRouter'),issues:checks('netIssues'),highUsage:val('f-netUsage'),cat6:radio('netCat6'),poe:radio('netPoE')},
+    smart:{systems:checks('smartSub'),control:radio('smartCtrl')},
+    sound:{space:radio('soundSpace'),use:checks('soundUse'),zones:radio('soundZones'),notes:val('f-soundNotes')},
+    infra:{power:radio('infraPower'),cable:checks('infraCable'),rack:radio('infraRack')},
+    tech:{observations:val('f-obs'),risks:val('f-risks'),design:val('f-design')},
+    next:{action:radio('nextAction')}
+  };
+}
+
+function autosave(){try{localStorage.setItem('vyra_draft',JSON.stringify(collectData()));}catch(e){}}
+
+function loadDraft(){
+  try{
+    const raw=localStorage.getItem('vyra_draft');if(!raw)return;
+    const d=JSON.parse(raw);
+    const sv=(id,v)=>{const e=$(id);if(e&&v)e.value=v;};
+    const sr=(n,v)=>{if(!v)return;const e=document.querySelector(`[name="${n}"][value="${v}"]`);if(e)e.checked=true;};
+    const sc=(n,v)=>{if(!v)return;v.split(', ').forEach(x=>{const e=document.querySelector(`[name="${n}"][value="${x}"]`);if(e)e.checked=true;});};
+    const c=d.client||{};sv('f-name',c.name);sv('f-phone',c.phone);sv('f-loc',c.location);sr('propType',c.propType);sv('f-floors',c.floors);sv('f-area',c.area);sc('systems',c.systems);
+    const cc=d.cctv||{};sc('cctvAreas',cc.areas);sr('cctvLight',cc.light);sr('cctvNight',cc.night);sr('cctvCable',cc.cable);sv('f-cctvNotes',cc.notes);
+    const n=d.network||{};sr('netRouter',n.router);sc('netIssues',n.issues);sv('f-netUsage',n.highUsage);sr('netCat6',n.cat6);sr('netPoE',n.poe);
+    const sm=d.smart||{};sc('smartSub',sm.systems);sr('smartCtrl',sm.control);
+    const so=d.sound||{};sr('soundSpace',so.space);sc('soundUse',so.use);sr('soundZones',so.zones);sv('f-soundNotes',so.notes);
+    const i=d.infra||{};sr('infraPower',i.power);sc('infraCable',i.cable);sr('infraRack',i.rack);
+    const t=d.tech||{};sv('f-obs',t.observations);sv('f-risks',t.risks);sv('f-design',t.design);
+    const nx=d.next||{};sr('nextAction',nx.action);
+  }catch(e){}
+}
+
+document.addEventListener('change',autosave);
+document.addEventListener('input',autosave);
+
+function saveOffline(data){try{const q=JSON.parse(localStorage.getItem('vyra_queue')||'[]');q.push({data,ts:Date.now()});localStorage.setItem('vyra_queue',JSON.stringify(q));}catch(e){}}
+
+async function flushQueue(){
+  try{
+    const q=JSON.parse(localStorage.getItem('vyra_queue')||'[]');if(!q.length)return;
+    const rem=[];
+    for(const item of q){try{await sendJSONP(item.data);}catch(e){rem.push(item);}}
+    localStorage.setItem('vyra_queue',JSON.stringify(rem));
+    const n=q.length-rem.length;if(n>0)showToast(`✓ ${n} offline survey(s) synced!`);
+  }catch(e){}
+}
+
+function sendJSONP(data){
+  return new Promise((res,rej)=>{
+    const cb='cb_'+Date.now();
+    const t=setTimeout(()=>{delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);rej(new Error('Timeout'));},12000);
+    window[cb]=(r)=>{clearTimeout(t);delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);r.status==='ok'?res(r):rej(new Error(r.message));};
+    const s=document.createElement('script');
+    s.src=WEB_APP_URL+'?callback='+cb+'&data='+encodeURIComponent(JSON.stringify(data));
+    s.onerror=()=>{clearTimeout(t);delete window[cb];rej(new Error('Network error'));};
+    document.head.appendChild(s);
+  });
+}
+
+async function submitSurvey(){
+  if(!validate(8))return;
+  const data=collectData();
+  const btn=$('btnNext');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Submitting...';
+  let ok=false;
+  if(navigator.onLine){try{await sendJSONP(data);ok=true;}catch(e){ok=false;}}
+  if(!ok)saveOffline(data);
+  try{localStorage.removeItem('vyra_draft');}catch(e){}
+  renderSummary(data);
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  $('navBar').style.display='none';
+  $('summary-screen').classList.add('active');
+  $('step-counter').innerHTML='<b>Done</b>';
+  $('prog-fill').style.width='100%';
+  $('sum-banner').innerHTML=ok
+    ?'<div class="sum-check">✓</div><h2>Survey Submitted</h2><p>Saved to Google Sheets successfully.</p>'
+    :'<div class="sum-check" style="border-color:#f59e0b;background:rgba(245,158,11,.1);font-size:22px">📵</div><h2>Saved Offline</h2><p style="color:#f59e0b">No internet. Will sync automatically when you reconnect.</p>';
+}
+
+function renderSummary(d){
+  const sel=(d.client.systems||'').split(', '),has=k=>sel.includes(k);
+  const all=[
+    {always:true,title:'Client & Property',rows:[['Client',d.client.name],['Phone',d.client.phone],['Location',d.client.location],['Property',d.client.propType],['Floors',d.client.floors],['Area',d.client.area+' m\u00b2'],['Systems',d.client.systems]]},
+    {key:'CCTV',title:'CCTV Survey',rows:[['Areas',d.cctv.areas],['Lighting',d.cctv.light],['Night',d.cctv.night],['Cable',d.cctv.cable],['Notes',d.cctv.notes]]},
+    {key:'Network',title:'Network & Wi-Fi',rows:[['Router',d.network.router],['Issues',d.network.issues],['High Usage',d.network.highUsage],['Cat6',d.network.cat6],['PoE',d.network.poe]]},
+    {key:'Smart',title:'Smart System',rows:[['Sub-systems',d.smart.systems],['Control',d.smart.control]]},
+    {key:'Sound',title:'Sound System',rows:[['Space',d.sound.space],['Use',d.sound.use],['Zones',d.sound.zones],['Notes',d.sound.notes]]},
+    {always:true,title:'Infrastructure',rows:[['Power',d.infra.power],['Cable Paths',d.infra.cable],['Rack',d.infra.rack]]},
+    {always:true,title:'Field Notes',rows:[['Observations',d.tech.observations],['Risks',d.tech.risks],['Design',d.tech.design]]},
+    {always:true,title:'Next Action',rows:[['Action',d.next.action]]},
+  ];
+  const sections=all.filter(s=>s.always||has(s.key));
+  $('sum-content').innerHTML=sections.map((s,i)=>`<div class="sum-section"><div class="sum-sec-title">${String(i+1).padStart(2,'0')} \u00b7 ${s.title}</div>${s.rows.map(([k,v])=>`<div class="sum-row"><span class="sum-key">${k}</span><span class="sum-val${!v?' empty':''}">${v||'\u2014'}</span></div>`).join('')}</div>`).join('');
+}
+
+function newSurvey(){if(!confirm('Start a new survey?'))return;try{localStorage.removeItem('vyra_draft');}catch(e){}location.reload();}
+
+let toastT;
+function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);}
+
+window.addEventListener('online',()=>{showToast('Back online — syncing...');flushQueue();});
+
+if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+
+loadDraft();buildSequence();showStep(sequence[0]);updateUI();
+if(navigator.onLine)flushQueue();
+</script>
+</body>
+</html>
