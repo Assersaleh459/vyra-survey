@@ -1,4 +1,4 @@
-const CACHE = 'vyra-v20';
+const CACHE = 'vyra-v21';
 const ASSETS = ['./index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
