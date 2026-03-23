@@ -159,7 +159,7 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 /* SUMMARY */
 #summary-screen{display:none;flex-direction:column;height:100%;background:var(--bg);}
 #summary-screen.active{display:flex;}
-.sum-scroll{flex:1;overflow-y:auto;padding:20px 16px 28px;}
+.sum-scroll{flex:1;overflow-y:auto;padding:20px 16px 100px;}
 .sum-banner{background:linear-gradient(135deg,rgba(34,59,115,.8),rgba(28,45,92,.9));border:1px solid var(--border);border-radius:16px;padding:28px 20px;text-align:center;margin-bottom:20px;}
 .sum-check{width:58px;height:58px;border-radius:50%;background:rgba(111,199,209,.14);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 14px;}
 .sum-banner h2{font-family:'Montserrat',sans-serif;font-size:20px;font-weight:700;color:#fff;margin-bottom:6px;}
@@ -171,7 +171,7 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 .sum-key{font-size:10.5px;color:var(--muted);letter-spacing:.3px;text-transform:uppercase;}
 .sum-val{font-size:13.5px;font-weight:500;color:var(--text);}
 .sum-val.empty{color:rgba(169,209,218,.3);font-style:italic;font-size:12px;}
-.btn-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:8px 0 0;background:rgba(34,59,115,.5);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 0;background:rgba(34,59,115,.5);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
 .btn-new:active{border-color:var(--accent);color:var(--accent);}
 .btn-print{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 20px;background:linear-gradient(135deg,#5FAEB6,#6FC7D1);border:none;color:#19224A;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 4px 16px rgba(95,174,182,.3);}
 .btn-print:active{opacity:.8;}
@@ -857,7 +857,7 @@ function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add(
 window.addEventListener('online',()=>{showToast(lang==='ar'?'متصل — جاري المزامنة':'Back online — syncing…');flushQueue();});
 
 // ── VERSION ──────────────────────────────
-const APP_VERSION = '2.3.0';
+const APP_VERSION = '2.4.0';
 (function(){const el=$('version-badge');if(el)el.textContent='v'+APP_VERSION;})();
 
 // ── UPDATE SYSTEM ────────────────────────
