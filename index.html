@@ -25,7 +25,11 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 [dir="rtl"] .btn-back{flex-direction:row-reverse;}
 [dir="rtl"] .step-hdr{flex-direction:row;}
 [dir="rtl"] .topbar{flex-direction:row-reverse;}
-[dir="rtl"] .qlabel{flex-direction:row-reverse;justify-content:flex-end;}
+[dir="rtl"] .qlabel{flex-direction:row;justify-content:flex-start;text-transform:none;letter-spacing:0;font-size:12.5px;}
+[dir="rtl"] .step-num{letter-spacing:0;text-transform:none;}
+[dir="rtl"] .sum-key{text-transform:none;letter-spacing:0;}
+[dir="rtl"] .sum-sec-title{text-transform:none;letter-spacing:0;text-align:right;}
+[dir="rtl"] .qhint{margin-left:0;margin-right:4px;}
 [dir="rtl"] .tile-body{flex-direction:row-reverse;}
 [dir="rtl"] .tiles.col2 .tile-body,[dir="rtl"] .tiles.col3 .tile-body{flex-direction:column;}
 [dir="rtl"] .irow{direction:rtl;}
@@ -169,7 +173,7 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 <div class="step active" id="step-1">
   <div class="step-hdr"><div class="step-ico">👤</div><div><div class="step-num" id="lbl-1">Step 01</div><div class="step-name" data-i18n="s1title">Client &amp; Property</div></div></div>
   <div class="qblock"><div class="qlabel" data-i18n="clientName">Client Full Name <span class="qreq">*</span></div><input class="finput" id="f-name" type="text" data-i18n-ph="clientNamePh" placeholder="Full name" autocomplete="off"/></div>
-  <div class="qblock"><div class="qlabel" data-i18n="phone">Phone Number <span class="qreq">*</span></div><input class="finput" id="f-phone" type="tel" placeholder="+20 …"/></div>
+  <div class="qblock"><div class="qlabel" data-i18n="phone">Phone Number <span class="qreq">*</span></div><input class="finput" id="f-phone" type="tel" data-i18n-ph="phonePh" placeholder="+20 …"/></div>
   <div class="qblock"><div class="qlabel" data-i18n="location">Location / Area <span class="qreq">*</span></div><input class="finput" id="f-loc" type="text" data-i18n-ph="locationPh" placeholder="City, district, street"/></div>
   <div class="qblock">
     <div class="qlabel" data-i18n="propType">Property Type</div>
@@ -183,8 +187,8 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
     </div>
   </div>
   <div class="irow">
-    <div class="qblock"><div class="qlabel" data-i18n="floors">Floors</div><input class="finput" id="f-floors" type="number" placeholder="3" inputmode="numeric"/></div>
-    <div class="qblock"><div class="qlabel" data-i18n="area">Area (m²)</div><input class="finput" id="f-area" type="number" placeholder="200" inputmode="numeric"/></div>
+    <div class="qblock"><div class="qlabel" data-i18n="floors">Floors</div><input class="finput" id="f-floors" type="number" data-i18n-ph="floorsPh" placeholder="3" inputmode="numeric"/></div>
+    <div class="qblock"><div class="qlabel" data-i18n="area">Area (m²)</div><input class="finput" id="f-area" type="number" data-i18n-ph="areaPh" placeholder="200" inputmode="numeric"/></div>
   </div>
   <div class="qblock">
     <div class="qlabel"><span data-i18n="systemsReq">Systems Required</span> <span class="qreq">*</span><span class="qhint" data-i18n="selectAll">Select all that apply</span></div>
@@ -378,8 +382,8 @@ const T = {
     s7title:'Field Notes', s8title:'Next Action',
     // Step 1
     clientName:'Client Full Name', clientNamePh:'Full name',
-    phone:'Phone Number', location:'Location / Area', locationPh:'City, district, street',
-    propType:'Property Type', floors:'Floors', area:'Area (m²)',
+    phone:'Phone Number', phonePh:'+20 …', location:'Location / Area', locationPh:'City, district, street',
+    propType:'Property Type', floors:'Floors', floorsPh:'e.g. 3', area:'Area (m²)', areaPh:'e.g. 200',
     systemsReq:'Systems Required', selectAll:'Select all that apply', selectAllShort:'Select all',
     apt:'Apartment', villa:'Villa', office:'Office', shop:'Shop', warehouse:'Warehouse', other:'Other',
     sysCCTV:'📷 CCTV Surveillance', sysNet:'🌐 Networking & Wi-Fi',
@@ -443,8 +447,8 @@ const T = {
     s7title:'ملاحظات الفني', s8title:'الخطوة التالية',
     // Step 1
     clientName:'اسم العميل كاملاً', clientNamePh:'الاسم الكامل',
-    phone:'رقم الهاتف', location:'الموقع / المنطقة', locationPh:'المدينة، الحي، الشارع',
-    propType:'نوع العقار', floors:'عدد الأدوار', area:'المساحة (م²)',
+    phone:'رقم الهاتف', phonePh:'٢٠+ …', location:'الموقع / المنطقة', locationPh:'المدينة، الحي، الشارع',
+    propType:'نوع العقار', floors:'عدد الأدوار', floorsPh:'مثال: ٣', area:'المساحة (م²)', areaPh:'مثال: ٢٠٠',
     systemsReq:'الأنظمة المطلوبة', selectAll:'اختر كل ما ينطبق', selectAllShort:'اختر الكل',
     apt:'شقة', villa:'فيلا', office:'مكتب', shop:'محل', warehouse:'مستودع', other:'أخرى',
     sysCCTV:'📷 كاميرات المراقبة', sysNet:'🌐 شبكات و Wi-Fi',
@@ -513,12 +517,16 @@ function applyLang() {
   // Translate all data-i18n elements
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (t[key] !== undefined) {
-      // Preserve child elements (like .qreq spans)
-      const req = el.querySelector('.qreq');
+    if (T[lang][key] !== undefined) {
+      const req  = el.querySelector('.qreq');
       const hint = el.querySelector('.qhint');
-      el.textContent = t[key];
-      if (req) el.appendChild(req);
+      el.textContent = T[lang][key];
+      // In RTL: put * before text (visually on left = start of Arabic)
+      // In LTR: put * after text (visually on right = end of English)
+      if (req) {
+        if (isAr) el.insertBefore(req, el.firstChild);
+        else el.appendChild(req);
+      }
       if (hint) el.appendChild(hint);
     }
   });
@@ -531,6 +539,9 @@ function applyLang() {
 
   // Update lang toggle button
   document.getElementById('lang-label').textContent = isAr ? 'EN' : 'AR';
+
+  // Re-render current step label (set dynamically, not via data-i18n)
+  showStep(sequence[seqIdx]);
 
   // Update nav buttons
   updateUI();
@@ -578,12 +589,12 @@ function showStep(id){
   const el=$(`step-${id}`);if(!el)return;
   el.classList.add('active');
   const lbl=$(`lbl-${id}`);
-  if(lbl)lbl.textContent=`${t('stepOf')} ${String(seqIdx+1).padStart(2,'0')} ${t('of')} ${sequence.length}`;
+  if(lbl)lbl.textContent=`${t('stepOf')} ${nPad(seqIdx+1,2)} ${t('of')} ${n(sequence.length)}`;
 }
 
 function updateUI(){
   const pos=seqIdx+1,total=sequence.length;
-  $('step-counter').innerHTML=`<b>${pos}</b> / ${total}`;
+  $('step-counter').innerHTML=`<b>${n(pos)}</b> / ${n(total)}`;
   $('prog-fill').style.width=`${(pos/total)*100}%`;
   $('btnBack').style.display=seqIdx>0?'flex':'none';
   $('btnBack').textContent=t('back');
@@ -711,7 +722,7 @@ function renderSummary(d){
   ];
   const sections=all.filter(s=>s.always||has(s.key));
   $('sum-content').innerHTML=sections.map((s,i)=>
-    '<div class="sum-section"><div class="sum-sec-title">'+String(i+1).padStart(2,'0')+' \u00b7 '+s.title+'</div>'+
+    '<div class="sum-section"><div class="sum-sec-title">'+nPad(i+1,2)+' \u00b7 '+s.title+'</div>'+
     s.rows.map(r=>'<div class="sum-row"><span class="sum-key">'+r[0]+'</span><span class="sum-val'+(r[1]?'':' empty')+'">'+(r[1]||'\u2014')+'</span></div>').join('')+
     '</div>'
   ).join('');
@@ -725,7 +736,7 @@ function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add(
 window.addEventListener('online',()=>{showToast(lang==='ar'?'متصل — جاري المزامنة':'Back online — syncing…');flushQueue();});
 
 // ── VERSION ──────────────────────────────
-const APP_VERSION = '1.2.0';
+const APP_VERSION = '1.7.0';
 (function(){const el=$('version-badge');if(el)el.textContent='v'+APP_VERSION;})();
 
 // ── UPDATE SYSTEM ────────────────────────
@@ -764,7 +775,14 @@ if('serviceWorker' in navigator){
   });
 }
 
-// ── INIT ─────────────────────────────────
+// Convert Western digits to Arabic-Indic when in Arabic mode
+function n(num){
+  if(lang !== 'ar') return String(num);
+  return String(num).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+}
+function nPad(num, len){
+  return n(String(num).padStart(len, '0'));
+}
 loadDraft();
 buildSequence();
 applyLang();       // apply saved language first
