@@ -453,7 +453,14 @@ function showToast(msg){const t=$('toast');t.textContent=msg;t.classList.add('sh
 
 window.addEventListener('online',()=>{showToast('Back online — syncing...');flushQueue();});
 
-if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
+if('serviceWorker' in navigator){
+  window.addEventListener('load', async ()=>{
+    // Unregister ALL old service workers first, then register fresh
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for(const reg of regs){ await reg.unregister(); }
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
 
 loadDraft();buildSequence();showStep(sequence[0]);updateUI();
 flushQueue();
