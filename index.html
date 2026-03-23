@@ -389,52 +389,25 @@ async function flushQueue(){
   try{
     const q=JSON.parse(localStorage.getItem('vyra_queue')||'[]');if(!q.length)return;
     const rem=[];
-    for(const item of q){try{await sendForm(item.data);}catch(e){rem.push(item);}}
+    for(const item of q){
+      const ok=await sendData(item.data);
+      if(!ok)rem.push(item);
+    }
     localStorage.setItem('vyra_queue',JSON.stringify(rem));
-    const n=q.length-rem.length;if(n>0)showToast('✓ '+n+' offline survey(s) synced to Google Sheets!');
+    const n=q.length-rem.length;if(n>0)showToast('✓ '+n+' offline survey(s) synced!');
   }catch(e){}
 }
 
-// Iframe form submission — no CORS, works from any host, proven reliable
-function sendForm(data){
-  return new Promise(function(resolve, reject){
-    // Remove any existing frame
-    var old = document.getElementById('vyra_frame');
-    if(old) old.parentNode.removeChild(old);
-
-    var iframe = document.createElement('iframe');
-    iframe.id = 'vyra_frame';
-    iframe.name = 'vyra_frame';
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-
-    var form = document.createElement('form');
-    form.method = 'GET';
-    form.action = WEB_APP_URL;
-    form.target = 'vyra_frame';
-    form.style.display = 'none';
-
-    var input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'data';
-    input.value = JSON.stringify(data);
-    form.appendChild(input);
-    document.body.appendChild(form);
-
-    var timeout = setTimeout(function(){
-      resolve('timeout'); // resolve anyway — sheet may still have saved
-    }, 8000);
-
-    iframe.onload = function(){
-      clearTimeout(timeout);
-      setTimeout(function(){
-        if(form.parentNode) form.parentNode.removeChild(form);
-      }, 500);
-      resolve('ok');
-    };
-
-    form.submit();
-  });
+// fetch with no-cors — works from HTTPS (GitHub Pages), no CORS error
+// Response is opaque (we can't read it) but the server still receives and saves the data
+async function sendData(data){
+  try{
+    const url=WEB_APP_URL+'?data='+encodeURIComponent(JSON.stringify(data));
+    await fetch(url,{method:'GET',mode:'no-cors'});
+    return true;
+  }catch(e){
+    return false;
+  }
 }
 
 async function submitSurvey(){
@@ -444,11 +417,8 @@ async function submitSurvey(){
   btn.disabled=true;
   btn.innerHTML='<span class="spinner"></span> Submitting...';
 
-  try{
-    await sendForm(data);
-  }catch(e){
-    saveOffline(data);
-  }
+  const ok=await sendData(data);
+  if(!ok)saveOffline(data);
 
   try{localStorage.removeItem('vyra_draft');}catch(e){}
   renderSummary(data);
