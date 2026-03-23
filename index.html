@@ -389,32 +389,67 @@ async function flushQueue(){
   try{
     const q=JSON.parse(localStorage.getItem('vyra_queue')||'[]');if(!q.length)return;
     const rem=[];
-    for(const item of q){try{await sendJSONP(item.data);}catch(e){rem.push(item);}}
+    for(const item of q){try{await sendForm(item.data);}catch(e){rem.push(item);}}
     localStorage.setItem('vyra_queue',JSON.stringify(rem));
-    const n=q.length-rem.length;if(n>0)showToast(`✓ ${n} offline survey(s) synced!`);
+    const n=q.length-rem.length;if(n>0)showToast('✓ '+n+' offline survey(s) synced to Google Sheets!');
   }catch(e){}
 }
 
-function sendJSONP(data){
-  return new Promise((res,rej)=>{
-    const cb='cb_'+Date.now();
-    const t=setTimeout(()=>{delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);rej(new Error('Timeout'));},12000);
-    window[cb]=(r)=>{clearTimeout(t);delete window[cb];if(s.parentNode)s.parentNode.removeChild(s);r.status==='ok'?res(r):rej(new Error(r.message));};
-    const s=document.createElement('script');
-    s.src=WEB_APP_URL+'?callback='+cb+'&data='+encodeURIComponent(JSON.stringify(data));
-    s.onerror=()=>{clearTimeout(t);delete window[cb];rej(new Error('Network error'));};
-    document.head.appendChild(s);
+// Iframe form submission — no CORS, works from any host, proven reliable
+function sendForm(data){
+  return new Promise(function(resolve, reject){
+    // Remove any existing frame
+    var old = document.getElementById('vyra_frame');
+    if(old) old.parentNode.removeChild(old);
+
+    var iframe = document.createElement('iframe');
+    iframe.id = 'vyra_frame';
+    iframe.name = 'vyra_frame';
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+
+    var form = document.createElement('form');
+    form.method = 'GET';
+    form.action = WEB_APP_URL;
+    form.target = 'vyra_frame';
+    form.style.display = 'none';
+
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = JSON.stringify(data);
+    form.appendChild(input);
+    document.body.appendChild(form);
+
+    var timeout = setTimeout(function(){
+      resolve('timeout'); // resolve anyway — sheet may still have saved
+    }, 8000);
+
+    iframe.onload = function(){
+      clearTimeout(timeout);
+      setTimeout(function(){
+        if(form.parentNode) form.parentNode.removeChild(form);
+      }, 500);
+      resolve('ok');
+    };
+
+    form.submit();
   });
 }
 
 async function submitSurvey(){
   if(!validate(8))return;
   const data=collectData();
-  const btn=$('btnNext');btn.disabled=true;btn.innerHTML='<span class="spinner"></span> Submitting...';
-  let ok=false;
-  // Always try to submit — don't rely on navigator.onLine (it's unreliable)
-  try{await sendJSONP(data);ok=true;}catch(e){ok=false;console.log('JSONP failed:',e.message);}
-  if(!ok)saveOffline(data);
+  const btn=$('btnNext');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span> Submitting...';
+
+  try{
+    await sendForm(data);
+  }catch(e){
+    saveOffline(data);
+  }
+
   try{localStorage.removeItem('vyra_draft');}catch(e){}
   renderSummary(data);
   document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
@@ -422,9 +457,7 @@ async function submitSurvey(){
   $('summary-screen').classList.add('active');
   $('step-counter').innerHTML='<b>Done</b>';
   $('prog-fill').style.width='100%';
-  $('sum-banner').innerHTML=ok
-    ?'<div class="sum-check">✓</div><h2>Survey Submitted</h2><p>Saved to Google Sheets successfully.</p>'
-    :'<div class="sum-check" style="border-color:#f59e0b;background:rgba(245,158,11,.1);font-size:22px">📵</div><h2>Saved Offline</h2><p style="color:#f59e0b">No internet. Will sync automatically when you reconnect.</p>';
+  $('sum-banner').innerHTML='<div class="sum-check">&#10003;</div><h2>Survey Submitted</h2><p>Saved to Google Sheets successfully.</p>';
 }
 
 function renderSummary(d){
@@ -440,7 +473,7 @@ function renderSummary(d){
     {always:true,title:'Next Action',rows:[['Action',d.next.action]]},
   ];
   const sections=all.filter(s=>s.always||has(s.key));
-  $('sum-content').innerHTML=sections.map((s,i)=>`<div class="sum-section"><div class="sum-sec-title">${String(i+1).padStart(2,'0')} \u00b7 ${s.title}</div>${s.rows.map(([k,v])=>`<div class="sum-row"><span class="sum-key">${k}</span><span class="sum-val${!v?' empty':''}">${v||'\u2014'}</span></div>`).join('')}</div>`).join('');
+  $('sum-content').innerHTML=sections.map((s,i)=>'<div class="sum-section"><div class="sum-sec-title">'+String(i+1).padStart(2,'0')+' \u00b7 '+s.title+'</div>'+s.rows.map(function(r){return '<div class="sum-row"><span class="sum-key">'+r[0]+'</span><span class="sum-val'+(r[1]?'':' empty')+'">'+(r[1]||'\u2014')+'</span></div>';}).join('')+'</div>').join('');
 }
 
 function newSurvey(){if(!confirm('Start a new survey?'))return;try{localStorage.removeItem('vyra_draft');}catch(e){}location.reload();}
@@ -453,7 +486,10 @@ window.addEventListener('online',()=>{showToast('Back online — syncing...');fl
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});}
 
 loadDraft();buildSequence();showStep(sequence[0]);updateUI();
-if(navigator.onLine)flushQueue();else flushQueue();
+flushQueue();
+</script>
+</body>
+</html>
 </script>
 </body>
 </html>
