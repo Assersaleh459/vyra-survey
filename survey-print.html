@@ -5,16 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>VYRA — Site Survey Report</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;800;900&display=swap');
 
-/* ── SCREEN VIEW ── */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+*,*::before,*::after{
+  box-sizing:border-box;margin:0;padding:0;
+  -webkit-print-color-adjust:exact!important;
+  print-color-adjust:exact!important;
+  color-adjust:exact!important;
+  font-synthesis:none!important;
+}
 
+/* Robust font stack — Montserrat if loaded, then system sans-serif that supports bold */
 body{
-  font-family:'Montserrat',Arial,sans-serif;
-  background:#dde3ec;
-  padding:20px;
-  color:#111;
+  font-family:'Montserrat','Arial','Helvetica Neue',Helvetica,sans-serif;
+  background:#dde3ec;padding:20px;color:#111;
 }
 
 .toolbar{
@@ -145,13 +149,33 @@ body{
     -webkit-print-color-adjust:exact!important;
     print-color-adjust:exact!important;
     color-adjust:exact!important;
-    font-family:'Montserrat',Arial,sans-serif!important;
+    font-synthesis:none!important;
+    font-family:'Montserrat','Arial','Helvetica Neue',Helvetica,sans-serif!important;
   }
-  body{background:#fff!important;padding:0!important;margin:0!important;}
+  body{background:#fff!important;padding:0!important;margin:0!important;color:#111!important;}
   .toolbar{display:none!important;}
   .page{box-shadow:none!important;margin:0!important;width:210mm!important;}
   @page{size:A4 portrait;margin:0;}
   .section{break-inside:avoid;page-break-inside:avoid;}
+  /* Force all colors and weights */
+  .logo-name{color:#19224A!important;font-weight:900!important;}
+  .logo-tagline{color:#444!important;font-weight:700!important;}
+  .doc-title-sm{color:#19224A!important;font-weight:900!important;}
+  .doc-date{color:#666!important;}
+  .header{border-bottom:2.5pt solid #19224A!important;}
+  .meta-bar{border:1.5pt solid #19224A!important;}
+  .meta-label{color:#19224A!important;font-weight:800!important;}
+  .meta-value{color:#111!important;font-weight:500!important;}
+  .sec-title{color:#19224A!important;font-weight:800!important;background:#f3f5f8!important;border-left:3pt solid #19224A!important;}
+  .sec-table{border:1pt solid #b8ccd8!important;}
+  .sec-key{color:#19224A!important;font-weight:800!important;background:#fff!important;}
+  .sec-val{color:#111!important;font-weight:500!important;}
+  .sec-table tr:nth-child(even){background:#f6f9fb!important;}
+  .sig-name{color:#19224A!important;font-weight:800!important;}
+  .sig-role{color:#666!important;}
+  .footer{border-top:2pt solid #19224A!important;background:#fff!important;}
+  .footer-item{color:#222!important;}
+  .footer-item b{color:#19224A!important;font-weight:800!important;}
 }
 </style>
 </head>
@@ -160,7 +184,11 @@ body{
 <div class="toolbar">
   <span class="tb-title" id="toolbar-title">VYRA Systems — Site Survey Report</span>
   <button class="tb-btn btn-close" onclick="window.close()">✕ Close</button>
-  <button class="tb-btn btn-print" onclick="window.print()">🖨️ Print / Save PDF</button>
+  <button class="tb-btn btn-print" onclick="window.print()">🖨️ Save as PDF / Print</button>
+</div>
+<div style="max-width:210mm;margin:0 auto 10px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:8px 14px;font-family:'Montserrat',Arial,sans-serif;font-size:11px;color:#555;display:flex;align-items:center;gap:8px;">
+  <span style="font-size:16px;">💡</span>
+  <span>For best results: Click <b>Save as PDF / Print</b> → set <b>Destination</b> to <b>"Save as PDF"</b> → Save → then print the PDF file. This preserves fonts and colors perfectly.</span>
 </div>
 
 <div class="page">
@@ -211,13 +239,13 @@ body{
       <div class="footer-item"><b>Phone:</b> +201555310349</div>
       <div class="footer-item"><b>Facebook:</b> Vyra Systems</div>
       <div class="footer-item"><b>Website:</b> Vyra-systems.com</div>
-      <div class="footer-item"><b>Email:</b> asserhegazy@vyra-systems.com</div>
+      <div class="footer-item"><b>Email:</b> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ea8b99998f98828f8d8b9093aa9c93988bc79993999e8f8799c4898587">[email&#160;protected]</a></div>
       <div class="footer-item"><b>Address:</b> 21st st, New Cairo, Egypt</div>
     </div>
   </div>
 </div>
 
-<script>
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
 const raw = localStorage.getItem('vyra_print_data');
 if (!raw) {
   document.body.innerHTML = '<p style="padding:40px;font-family:Montserrat,Arial,sans-serif;color:#666">No survey data. Please print from the survey app.</p>';
@@ -290,14 +318,9 @@ document.getElementById('sections').innerHTML = sections.map((s,i) => `
     <div class="sec-title">${String(i+1).padStart(2,'0')} · ${s.title}</div>
     <table class="sec-table">
       ${s.rows.filter(([,v])=>v).map(([k,v])=>`
-        <tr><td class="sec-key">${k}</td><td class="sec-val">${v}</td></tr>`).join('')}
+        <tr><td class="sec-key">${k}</td>        <tr><td class="sec-key">${k}</td><td class="sec-val">${v}</td></tr>`).join('')}
     </table>
   </div>`).join('');
-
-// Wait for Montserrat to fully load before printing
-document.fonts.ready.then(() => {
-  setTimeout(() => window.print(), 400);
-});
 </script>
 </body>
 </html>
