@@ -186,7 +186,13 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
 .sum-val{font-size:13.5px;font-weight:500;color:var(--text);}
 .sum-val.empty{color:rgba(169,209,218,.3);font-style:italic;font-size:12px;}
 .btn-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 0;background:rgba(34,59,115,.5);border:1.5px solid var(--border);color:var(--muted);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;}
-.btn-new:active{border-color:var(--accent);color:var(--accent);}
+.btn-wa-group{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:44px;border-radius:var(--r);margin:8px 0 0;background:transparent;border:1px solid rgba(95,174,182,.25);color:rgba(169,209,218,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:"Montserrat",sans-serif;transition:all .15s;}
+.btn-photo{width:100%;height:50px;border-radius:var(--r);background:rgba(95,174,182,.12);border:1.5px dashed var(--accent);color:var(--accent2);font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:'Montserrat',sans-serif;}
+.btn-photo:active{background:rgba(95,174,182,.22);}
+.photo-previews{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.photo-thumb{position:relative;width:80px;height:80px;border-radius:8px;overflow:hidden;border:2px solid var(--border);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-del{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(224,92,110,.9);border:none;color:#fff;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:1;}
 .btn-print{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:50px;border-radius:var(--r);margin:10px 0 0;background:linear-gradient(135deg,#5FAEB6,#6FC7D1);border:none;color:#19224A;font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;box-shadow:0 4px 16px rgba(95,174,182,.3);}
 .btn-print:active{opacity:.8;}
 .sum-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;}
@@ -215,7 +221,7 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
   <span class="brand">VYRA</span>
   <span class="ver-badge" id="version-badge"></span>
   <div class="topbar-mid"></div>
-  <input class="tech-input" id="f-tech" type="text" data-i18n-ph="techNamePh" placeholder="👷 Your name" autocomplete="off" oninput="autosave();updateTechDisplay()"/>
+  <input class="tech-input" id="f-tech" type="text" data-i18n-ph="techNamePh" placeholder="👷 Your name" autocomplete="off" oninput="onTechInput()"/>
   <div class="tech-display" id="tech-display" style="display:none"></div>
   <div class="step-badge" id="step-counter"><b>1</b> / 4</div>
   <button class="lang-btn" id="lang-btn" onclick="toggleLang()">🌐 <span id="lang-label">AR</span></button>
@@ -392,6 +398,12 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
   <div class="qblock"><div class="qlabel" data-i18n="keyObs">Key Observations</div><textarea class="ftextarea" id="f-obs" data-i18n-ph="keyObsPh" placeholder="Site conditions, access points…" rows="3"></textarea></div>
   <div class="qblock"><div class="qlabel" data-i18n="risks">Risks &amp; Challenges</div><textarea class="ftextarea" id="f-risks" data-i18n-ph="risksPh" placeholder="Installation risks, limitations…" rows="3"></textarea></div>
   <div class="qblock"><div class="qlabel" data-i18n="sugDesign">Suggested Design</div><textarea class="ftextarea" id="f-design" data-i18n-ph="sugDesignPh" placeholder="Recommended layout, equipment…" rows="3"></textarea></div>
+  <div class="qblock">
+    <div class="qlabel" data-i18n="sitePhoto">Site Photos <span class="qhint" data-i18n="photoHint">Up to 3 photos</span></div>
+    <input type="file" id="f-photos" accept="image/*" multiple capture="environment" style="display:none" onchange="handlePhotos(this)"/>
+    <button class="btn-photo" onclick="$('f-photos').click()" type="button">📷 <span data-i18n="takePhoto">Take / Choose Photos</span></button>
+    <div class="photo-previews" id="photo-previews"></div>
+  </div>
 </div>
 
 <!-- STEP 8: NEXT ACTION -->
@@ -427,6 +439,7 @@ input,textarea,button{font-family:'Montserrat',sans-serif;}
       <button class="btn-whatsapp" onclick="shareWhatsApp()">💬 <span data-i18n="shareWA">Share on WhatsApp</span></button>
     </div>
     <button class="btn-print" onclick="printSurvey()">🖨️ <span data-i18n="printSurvey">Print Survey</span></button>
+    <button class="btn-wa-group" onclick="setWaGroup()" id="btn-wa-group">⚙️ <span data-i18n="waGroupSet">Set WhatsApp Group</span></button>
     <button class="btn-new" onclick="newSurvey()" data-i18n="newSurvey">＋ New Survey</button>
   </div>
 </div>
@@ -501,6 +514,10 @@ const T = {
     printSurvey:'Print Survey',
     createQuot:'Create Quotation',
     shareWA:'Share on WhatsApp',
+    sitePhoto:'Site Photos',
+    photoHint:'Up to 3 photos',
+    takePhoto:'Take / Choose Photos',
+    waGroupSet:'Set WhatsApp Group',
     // Alerts
     alertFill:'Please fill Name, Technician, Phone and Location.',
     alertSystem:'Please select at least one system.',
@@ -570,6 +587,10 @@ const T = {
     printSurvey:'طباعة الاستبيان',
     createQuot:'إنشاء عرض سعر',
     shareWA:'مشاركة على واتساب',
+    sitePhoto:'صور الموقع',
+    photoHint:'حتى 3 صور',
+    takePhoto:'التقاط / اختيار صور',
+    waGroupSet:'تعيين مجموعة واتساب',
     // Alerts
     alertFill:'الرجاء تعبئة الاسم واسم الفني والهاتف والموقع.',
     alertSystem:'الرجاء اختيار نظام واحد على الأقل.',
@@ -716,15 +737,66 @@ const radio=n=>{const e=document.querySelector(`[name="${n}"]:checked`);return e
 const checks=n=>[...document.querySelectorAll(`[name="${n}"]:checked`)].map(e=>e.value).join(', ')||'';
 const val=id=>{const e=$(id);return e?e.value.trim():'';};
 
+// ── FEATURE 1: Technician name persistence ──────────────
+const TECH_KEY = 'vyra_tech_name';
+const WA_GROUP_KEY = 'vyra_wa_group';
+
+function loadTechName(){
+  const saved = localStorage.getItem(TECH_KEY);
+  if(saved){ const el=$('f-tech'); if(el) el.value=saved; updateTechDisplay(); }
+}
+
+// Save tech name whenever it changes
+function onTechInput(){
+  const v = $('f-tech').value.trim();
+  if(v) localStorage.setItem(TECH_KEY, v);
+  autosave();
+  updateTechDisplay();
+}
+
+// ── FEATURE 4: Photo handling ───────────────────────────
+let surveyPhotos = []; // array of base64 strings
+
+function handlePhotos(input){
+  const files = Array.from(input.files).slice(0, 3 - surveyPhotos.length);
+  files.forEach(file => {
+    if(surveyPhotos.length >= 3) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      surveyPhotos.push(e.target.result);
+      renderPhotoThumbs();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = ''; // reset so same file can be re-selected
+}
+
+function renderPhotoThumbs(){
+  const wrap = $('photo-previews');
+  if(!wrap) return;
+  wrap.innerHTML = surveyPhotos.map((src,i) =>
+    `<div class="photo-thumb">
+      <img src="${src}" alt="photo ${i+1}"/>
+      <button class="photo-del" onclick="removePhoto(${i})">×</button>
+    </div>`
+  ).join('');
+}
+
+function removePhoto(idx){
+  surveyPhotos.splice(idx,1);
+  renderPhotoThumbs();
+}
+
 function collectData(){
   return{
+    submittedAt: new Date().toISOString(),
     client:{name:val('f-name'),tech:val('f-tech'),phone:val('f-phone'),location:val('f-loc'),propType:radio('propType'),floors:val('f-floors'),area:val('f-area'),systems:checks('systems')},
     cctv:{areas:checks('cctvAreas'),light:radio('cctvLight'),night:radio('cctvNight'),cable:radio('cctvCable'),notes:val('f-cctvNotes')},
     network:{router:radio('netRouter'),issues:checks('netIssues'),highUsage:val('f-netUsage'),cat6:radio('netCat6'),poe:radio('netPoE')},
     smart:{systems:checks('smartSub'),control:radio('smartCtrl')},
     sound:{space:radio('soundSpace'),use:checks('soundUse'),zones:radio('soundZones'),notes:val('f-soundNotes')},
     infra:{power:radio('infraPower'),cable:checks('infraCable'),rack:radio('infraRack')},
-    tech:{observations:val('f-obs'),risks:val('f-risks'),design:val('f-design')},
+    tech:{observations:val('f-obs'),risks:val('f-risks'),design:val('f-design'),photos:surveyPhotos.length},
     next:{action:radio('nextAction')}
   };
 }
@@ -856,9 +928,10 @@ function shareWhatsApp() {
     `⚙️ *الأنظمة:* ${sys}`,
     '',
     `📋 *الإجراء التالي:* ${data.next.action}`,
+    surveyPhotos.length ? `📷 *صور:* ${surveyPhotos.length} صورة` : '',
     '',
     '_تم إرسال التفاصيل الكاملة إلى Google Sheets_'
-  ] : [
+  ].filter(Boolean) : [
     '🔵 *VYRA Systems — Site Survey*',
     '',
     `👤 *Client:* ${c.name}`,
@@ -869,24 +942,40 @@ function shareWhatsApp() {
     `⚙️ *Systems:* ${sys}`,
     '',
     `📋 *Next Action:* ${data.next.action}`,
+    surveyPhotos.length ? `📷 *Photos:* ${surveyPhotos.length} attached` : '',
     '',
     '_Full details saved to Google Sheets_'
-  ];
+  ].filter(Boolean);
+
   const msg = encodeURIComponent(lines.join('\n'));
-  window.open('https://wa.me/?text=' + msg, '_blank');
+  // Feature 7: use saved group number if available
+  const group = localStorage.getItem(WA_GROUP_KEY) || '';
+  const base = group ? `https://wa.me/${group.replace(/\D/g,'')}` : 'https://wa.me/';
+  window.open(base + '?text=' + msg, '_blank');
 }
 
 
+// ── FEATURE 7: WhatsApp Group ──────────────────────────
+function setWaGroup(){
+  const current = localStorage.getItem(WA_GROUP_KEY) || '';
+  const prompt_txt = lang === 'ar'
+    ? 'أدخل رقم مجموعة واتساب (مع كود الدولة، مثال: 201001234567):'
+    : 'Enter WhatsApp group number (with country code, e.g. 201001234567):';
+  const val = window.prompt(prompt_txt, current);
+  if(val === null) return;
+  const clean = val.replace(/\D/g,'');
+  if(clean){ localStorage.setItem(WA_GROUP_KEY, clean); showToast(lang==='ar' ? '✓ تم حفظ رقم المجموعة' : '✓ Group number saved'); }
+}
+
 function printSurvey() {
   const data = collectData();
-  // Store data + translations + language for the print page
   const printData = Object.assign({}, data, {
     lang: lang,
-    translations: T[lang]
+    translations: T[lang],
+    photos: surveyPhotos,
+    submittedAt: data.submittedAt  // real submission timestamp
   });
-  try {
-    localStorage.setItem('vyra_print_data', JSON.stringify(printData));
-  } catch(e) {}
+  try { localStorage.setItem('vyra_print_data', JSON.stringify(printData)); } catch(e) {}
   window.open('survey-print.html', '_blank');
 }
 function newSurvey(){
@@ -901,7 +990,7 @@ function showToast(msg){const el=$('toast');el.textContent=msg;el.classList.add(
 window.addEventListener('online',()=>{showToast(lang==='ar'?'متصل — جاري المزامنة':'Back online — syncing…');flushQueue();});
 
 // ── VERSION ──────────────────────────────
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '4.0.0';
 (function(){const el=$('version-badge');if(el)el.textContent='v'+APP_VERSION;})();
 
 // ── UPDATE SYSTEM ────────────────────────
@@ -949,8 +1038,9 @@ function nPad(num, len){
   return n(String(num).padStart(len, '0'));
 }
 loadDraft();
+loadTechName();       // Feature 1: restore saved technician name
 buildSequence();
-applyLang();       // apply saved language first
+applyLang();          // apply saved language first
 showStep(sequence[0]);
 updateUI();
 flushQueue();
