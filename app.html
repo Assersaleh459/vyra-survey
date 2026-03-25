@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="theme-color" content="#19224A"/>
-<title>VYRA Systems</title>
+<title>VYRA Systems v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
@@ -737,8 +737,7 @@ function modalQuot(){
 function modalWA(){
   if(!currentModalSurvey) return;
   const d=currentModalSurvey,c=d.client||{};
-  const msg=encodeURIComponent(['🔵 *VYRA Systems — Site Survey*','','👤 *Client:* '+c.name,'👷 *Tech:* '+(c.tech||d.techName),'📞 *Phone:* '+c.phone,'📍 *Location:* '+c.location,'⚙️ *Systems:* '+c.systems,'📋 *Action:* '+d.next?.action,'🏷 *Status:* '+(d.status||'pending')].join('
-'));
+  const msg=encodeURIComponent(['🔵 *VYRA Systems — Site Survey*','','👤 *Client:* '+c.name,'👷 *Tech:* '+(c.tech||d.techName),'📞 *Phone:* '+c.phone,'📍 *Location:* '+c.location,'⚙️ *Systems:* '+c.systems,'📋 *Action:* '+d.next?.action,'🏷 *Status:* '+(d.status||'pending')].join('\n'));
   window.open('https://wa.me/?text='+msg,'_blank');
 }
 function modalPrint(){
@@ -1022,8 +1021,7 @@ function svOpenQuot(){
 function svShareWA(){
   if(!svLastData) return;
   const d=svLastData,c=d.client;
-  const msg=encodeURIComponent(['🔵 *VYRA Systems — Site Survey*','','👤 *Client:* '+c.name,'📞 *Phone:* '+c.phone,'📍 *Location:* '+c.location,'⚙️ *Systems:* '+c.systems,'📋 *Next Action:* '+d.next?.action].join('
-'));
+  const msg=encodeURIComponent(['🔵 *VYRA Systems — Site Survey*','','👤 *Client:* '+c.name,'📞 *Phone:* '+c.phone,'📍 *Location:* '+c.location,'⚙️ *Systems:* '+c.systems,'📋 *Next Action:* '+d.next?.action].join('\n'));
   window.open('https://wa.me/?text='+msg,'_blank');
 }
 function svPrint(){
