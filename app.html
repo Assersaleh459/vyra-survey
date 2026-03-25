@@ -190,6 +190,7 @@ body{font-family:"Montserrat","Arial",sans-serif;background:var(--bg);color:var(
 .role-badge{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;flex-shrink:0;}
 .role-admin{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);color:#fbbf24;}
 .role-tech{background:rgba(95,174,182,.12);border:1px solid var(--border);color:var(--teal2);}
+.role-manager{background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:#a78bfa;}
 .role-pending{background:rgba(100,116,139,.15);border:1px solid rgba(100,116,139,.3);color:#94a3b8;}
 .btn-sm{height:30px;padding:0 12px;border-radius:8px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--border);background:rgba(95,174,182,.1);color:var(--teal2);}
 .audit-item{border-bottom:1px solid var(--border);padding:10px 0;font-size:12px;}
@@ -350,6 +351,12 @@ body{font-family:"Montserrat","Arial",sans-serif;background:var(--bg);color:var(
           <div class="fld"><label>Full Name</label><input class="finput" id="new-user-name" placeholder="Technician name"/></div>
           <div class="fld"><label>Email</label><input class="finput" id="new-user-email" type="email" placeholder="email@example.com"/></div>
           <div class="fld"><label>Temporary Password</label><input class="finput" id="new-user-pass" type="password" placeholder="Min 6 characters"/></div>
+          <div class="fld"><label>Role</label>
+            <select class="finput" id="new-user-role" style="cursor:pointer;">
+              <option value="technician">Technician — can submit surveys, see own data</option>
+              <option value="manager">Manager — can view all surveys, change status, create quotations</option>
+            </select>
+          </div>
           <button class="btn-primary" onclick="createUser()" style="margin-top:4px;">Create Account</button>
         </div>
         <div class="section-title">All Users</div>
@@ -394,7 +401,7 @@ body{font-family:"Montserrat","Arial",sans-serif;background:var(--bg);color:var(
       <button class="modal-btn mb-wa" onclick="modalWA()">💬 WhatsApp</button>
       <button class="modal-btn mb-print" onclick="modalPrint()">🖨 Print</button>
     </div>
-    <div class="status-pick">
+    <div class="status-pick" id="status-pick-wrap">
       <select class="status-sel" id="modal-status" onchange="saveModalStatus()">
         <option value="pending">🟡 Pending</option>
         <option value="quoted">🔵 Quoted</option>
@@ -547,12 +554,24 @@ auth.onAuthStateChanged(async user=>{
 
   // Set topbar
   document.getElementById('tb-name').textContent = currentUserDoc.name||'—';
-  document.getElementById('tb-role').textContent  = currentUserDoc.role==='admin'?'Admin':'Technician';
+  const roleLabels = {admin:'Admin',manager:'Manager',technician:'Technician',pending:'Pending'};
+  document.getElementById('tb-role').textContent = roleLabels[currentUserDoc.role] || currentUserDoc.role;
 
   // Show admin tab
-  if(currentUserDoc.role==='admin'){
-    document.getElementById('nav-admin').style.display='flex';
-  }
+  // ── ROLE PERMISSIONS ──
+  const role = currentUserDoc.role;
+  const PERMS = {
+    admin:      {survey:true,  surveys:true,  quotation:true, admin:true,  deletesurvey:true,  changestatus:true, viewall:true},
+    manager:    {survey:false, surveys:true,  quotation:true, admin:false, deletesurvey:false, changestatus:true, viewall:true},
+    technician: {survey:true,  surveys:true,  quotation:true, admin:false, deletesurvey:false, changestatus:false,viewall:false},
+    pending:    {survey:false, surveys:false, quotation:false,admin:false, deletesurvey:false, changestatus:false,viewall:false}
+  };
+  window.userPerms = PERMS[role] || PERMS.pending;
+
+  // Show/hide nav items based on role
+  document.getElementById('nav-survey').style.display  = userPerms.survey    ? 'flex':'none';
+  document.getElementById('nav-surveys').style.display = userPerms.surveys   ? 'flex':'none';
+  document.getElementById('nav-admin').style.display   = userPerms.admin     ? 'flex':'none';
 
   await logAudit('user_login',{}, null);
   initSurveyForm();
@@ -570,12 +589,20 @@ function showScreen(id){
 // NAVIGATION
 // ══════════════════════════════════════════════
 function navTo(page){
+  // Permission check
+  const permMap = {survey:'survey',surveys:'surveys',admin:'admin'};
+  const perm = permMap[page];
+  if(perm && window.userPerms && !window.userPerms[perm]){
+    showToast('⛔ You do not have access to this page');
+    return;
+  }
   document.querySelectorAll('.app-screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   document.getElementById('s-'+page).classList.add('active');
-  document.getElementById('nav-'+page).classList.add('active');
+  const navEl = document.getElementById('nav-'+page);
+  if(navEl) navEl.classList.add('active');
   if(page==='surveys') loadSurveys();
-  if(page==='admin'&&currentUserDoc?.role==='admin') loadAdmin();
+  if(page==='admin'&&window.userPerms?.admin) loadAdmin();
   if(page==='home') loadHome();
   if(page==='survey') resetSurvey();
 }
@@ -616,7 +643,7 @@ async function loadHome(){
 
   try{
     let q = db.collection('surveys').orderBy('submittedAt','desc');
-    if(currentUserDoc?.role!=='admin') q=q.where('techId','==',currentUser.uid);
+    if(!window.userPerms?.viewall) q=q.where('techId','==',currentUser.uid);
     const snap = await q.limit(50).get();
     const docs = snap.docs.map(d=>({id:d.id,...d.data()}));
     const today = new Date(); today.setHours(0,0,0,0);
@@ -649,7 +676,7 @@ async function loadSurveys(){
   document.getElementById('sv-list').innerHTML='<div class="loading-center"><div class="spin"></div></div>';
   try{
     let q = db.collection('surveys').orderBy('submittedAt','desc');
-    if(currentUserDoc?.role!=='admin') q=q.where('techId','==',currentUser.uid);
+    if(!window.userPerms?.viewall) q=q.where('techId','==',currentUser.uid);
     const snap = await q.limit(100).get();
     allSurveys = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderSurveys(allSurveys);
@@ -720,6 +747,10 @@ function openSurvey(id){
     rows('Field Notes',[['Observations',d.tech?.observations],['Risks',d.tech?.risks],['Design',d.tech?.design]]),
     rows('Next Action',[['Action',d.next?.action]])
   ].join('');
+  // Show/hide actions based on permissions
+  const canStatus = window.userPerms?.changestatus ||
+    (window.userPerms?.viewall===false && d.techId===currentUser?.uid);
+  document.getElementById('status-pick-wrap').style.display = canStatus ? 'block':'none';
   document.getElementById('sv-modal').classList.add('open');
 }
 
@@ -1053,16 +1084,23 @@ async function loadAdmin(){
     const users=snap.docs.map(d=>({id:d.id,...d.data()}));
     document.getElementById('users-list').innerHTML=users.map(u=>{
       const initials=(u.name||u.email||'?').charAt(0).toUpperCase();
-      const roleCls=u.role==='admin'?'role-admin':u.role==='pending'?'role-pending':'role-tech';
+      const roleCls=u.role==='admin'?'role-admin':u.role==='manager'?'role-manager':u.role==='pending'?'role-pending':'role-tech';
+      const isMe = u.id === currentUser?.uid;
       return `<div class="user-card">
         <div class="user-avatar">${initials}</div>
         <div class="user-info">
-          <div class="user-name">${u.name||'—'}</div>
+          <div class="user-name">${u.name||'—'} ${isMe?'<span style="font-size:10px;color:var(--teal)">(you)</span>':''}</div>
           <div class="user-email">${u.email}</div>
         </div>
         <span class="role-badge ${roleCls}">${u.role}</span>
-        ${u.role==='pending'?`<button class="btn-sm" onclick="approveUser('${u.id}')">Approve</button>`:''}
-        ${u.role==='technician'?`<button class="btn-sm" onclick="deactivateUser('${u.id}')">Remove</button>`:''}
+        ${u.role==='pending'?`<button class="btn-sm" onclick="approveUser('${u.id}','technician')">✓ Approve</button>`:''}
+        ${u.role==='pending'?`<button class="btn-sm" style="margin-left:4px;" onclick="approveUser('${u.id}','manager')">★ As Manager</button>`:''}
+        ${(u.role==='technician'||u.role==='manager')&&!isMe?`<select class="btn-sm" onchange="changeRole('${u.id}',this.value)" style="cursor:pointer;">
+          <option value="">Change role…</option>
+          <option value="technician">Technician</option>
+          <option value="manager">Manager</option>
+          <option value="pending">Remove access</option>
+        </select>`:''}
       </div>`;
     }).join('');
   }catch(e){ document.getElementById('users-list').innerHTML='<p style="color:#f87171;padding:20px;font-size:12px;">Error: '+e.message+'</p>'; }
@@ -1082,10 +1120,19 @@ async function loadAdmin(){
   }catch(e){}
 }
 
-async function approveUser(uid){
-  await db.collection('users').doc(uid).update({role:'technician'});
-  await logAudit('user_approved',{userId:uid},null);
-  showToast('✓ User approved');
+async function approveUser(uid, role){
+  role = role || 'technician';
+  await db.collection('users').doc(uid).update({role});
+  await logAudit('user_approved',{userId:uid, role},null);
+  showToast('✓ User approved as '+role);
+  loadAdmin();
+}
+async function changeRole(uid, newRole){
+  if(!newRole) return;
+  if(!confirm('Change this user role to '+newRole+'?')) return;
+  await db.collection('users').doc(uid).update({role:newRole});
+  await logAudit('role_changed',{userId:uid,newRole},null);
+  showToast('✓ Role changed to '+newRole);
   loadAdmin();
 }
 async function deactivateUser(uid){
@@ -1104,7 +1151,7 @@ async function createUser(){
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,pass);
     await db.collection('users').doc(cred.user.uid).set({
-      name,email,role:'technician',
+      name,email,role:document.getElementById('new-user-role')?.value||'technician',
       createdAt:firebase.firestore.FieldValue.serverTimestamp(),
       active:true
     });
