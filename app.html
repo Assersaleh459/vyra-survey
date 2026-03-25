@@ -599,7 +599,7 @@ function showToast(msg){
 // ══════════════════════════════════════════════
 async function loadHome(){
   const h = new Date().getHours();
-  const greet = h<12?'Good morning':'h<17?'Good afternoon'':'Good evening';
+  const greet = h<12?'Good morning':h<17?'Good afternoon':'Good evening';
   document.getElementById('home-welcome').textContent = greet+', '+(currentUserDoc?.name||'').split(' ')[0]+'!';
 
   try{
