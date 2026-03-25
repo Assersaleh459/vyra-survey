@@ -473,21 +473,26 @@ async function doAuth(){
   const errEl = document.getElementById('auth-err');
   errEl.style.display='none';
   const btn = document.getElementById('auth-btn');
-  btn.disabled=true; btn.textContent='…';
+  if(!email){errEl.textContent='Please enter your email.';errEl.style.display='block';return;}
+  if(!pass){errEl.textContent='Please enter your password.';errEl.style.display='block';return;}
+  btn.disabled=true; btn.textContent='Please wait...';
   try{
     if(authMode==='register'){
       const name = document.getElementById('reg-name').value.trim();
-      if(!name){throw{message:'Please enter your full name.'};}
+      if(!name){errEl.textContent='Please enter your full name.';errEl.style.display='block';btn.disabled=false;btn.textContent='Register';return;}
+      console.log('Registering:', email);
       const cred = await auth.createUserWithEmailAndPassword(email,pass);
+      console.log('Created UID:', cred.user.uid);
       const role = email===ADMIN_EMAIL ? 'admin' : 'pending';
-      await db.collection('users').doc(cred.user.uid).set({
-        name, email, role, createdAt:firebase.firestore.FieldValue.serverTimestamp(), active:true
-      });
-      await logAudit('user_registered',{name,email,role}, null);
+      await db.collection('users').doc(cred.user.uid).set({name,email,role,createdAt:firebase.firestore.FieldValue.serverTimestamp(),active:true});
+      console.log('Doc written, role:', role);
     } else {
+      console.log('Signing in:', email);
       await auth.signInWithEmailAndPassword(email,pass);
+      console.log('Sign in OK');
     }
   }catch(e){
+    console.error('Auth error full:', e.code, e.message);
     errEl.textContent = e.message||'Authentication failed.';
     errEl.style.display='block';
     btn.disabled=false;
