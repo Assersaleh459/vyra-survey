@@ -379,18 +379,69 @@ function setDefaults() {
   valid.setDate(valid.getDate() + 30);
   document.getElementById('quotDate').value   = fmt(today);
   document.getElementById('validUntil').value = fmt(valid);
-  // Auto quotation number
   document.getElementById('quotNo').value = 'QT-' + String(Date.now()).slice(-4);
-  // Default 6 rows
-  for (let i = 0; i < 6; i++) addRow();
+  // Only add blank rows if no systems param — loadFromParams handles pre-fill
+  const hasSystems = new URLSearchParams(window.location.search).get('systems');
+  if (!hasSystems) {
+    for (let i = 0; i < 6; i++) addRow();
+  }
 }
 
-// Pre-fill from URL params (when linked from survey app)
+// ── Pre-fill from URL params (linked from survey app or dashboard) ──
 function loadFromParams() {
   const p = new URLSearchParams(window.location.search);
   if (p.get('name'))    document.getElementById('clientName').value = p.get('name');
   if (p.get('phone'))   document.getElementById('phone').value      = p.get('phone');
   if (p.get('address')) document.getElementById('address').value    = p.get('address');
+  if (p.get('tech'))    document.getElementById('address').value    = document.getElementById('address').value; // keep address
+
+  const systems = (p.get('systems') || '').toLowerCase();
+  if (!systems) return;
+
+  // Clear default empty rows and pre-fill based on selected systems
+  document.getElementById('items-body').innerHTML = '';
+  rowCount = 0;
+
+  // ── CCTV items ──
+  if (systems.includes('cctv')) {
+    addRow('IP Camera', 'Hikvision 2MP IP Indoor/Outdoor Camera', '', '');
+    addRow('NVR Recorder', '4/8/16 Channel Network Video Recorder', '', '');
+    addRow('HDD Storage', '1TB/2TB Surveillance Hard Disk', '', '');
+    addRow('CCTV Cables', 'CAT6 / RG59 Cabling & Connectors', '', '');
+    addRow('CCTV Labor', 'Camera Installation & Configuration', '', '');
+  }
+
+  // ── Network items ──
+  if (systems.includes('network') || systems.includes('net')) {
+    addRow('Wireless AP', 'Ubiquiti / TP-Link Access Point', '', '');
+    addRow('Network Switch', '8/16 Port PoE Managed Switch', '', '');
+    addRow('Router', 'Main Router / Firewall', '', '');
+    addRow('Cat6 Cable', 'CAT6 UTP Cable (per meter)', '', '');
+    addRow('Network Labor', 'Network Installation & Configuration', '', '');
+  }
+
+  // ── Smart Home items ──
+  if (systems.includes('smart')) {
+    addRow('Smart Hub', 'Central Smart Home Controller', '', '');
+    addRow('Smart Switch', 'Touch Smart Light Switch', '', '');
+    addRow('Smart Sensor', 'Motion / Door / Window Sensor', '', '');
+    addRow('Smart Labor', 'Smart System Setup & Programming', '', '');
+  }
+
+  // ── Sound System items ──
+  if (systems.includes('sound')) {
+    addRow('Ceiling Speaker', 'In-Ceiling 2-Way Speaker', '', '');
+    addRow('Amplifier', 'Multi-Zone Audio Amplifier', '', '');
+    addRow('Audio Cable', 'Speaker Cable (per meter)', '', '');
+    addRow('Sound Labor', 'Sound System Installation & Setup', '', '');
+  }
+
+  // Always add installation row
+  addRow('Installation', 'Site Installation & Project Management', '', '');
+
+  // Pad to at least 6 rows total for clean look
+  const minRows = 6;
+  while (rowCount < minRows) addRow();
 }
 
 setDefaults();
