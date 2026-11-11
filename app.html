@@ -182,7 +182,7 @@ body{font-family:"Montserrat","Arial",sans-serif;background:var(--bg);color:var(
 .admin-tab.active{color:var(--teal2);border-bottom-color:var(--teal2);}
 .admin-panel{padding:14px 16px;display:none;}
 .admin-panel.active{display:block;}
-.user-card{background:rgba(34,59,115,.4);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.user-card{background:rgba(34,59,115,.4);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
 .user-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--teal),var(--teal2));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--navy);flex-shrink:0;}
 .user-info{flex:1;}
 .user-name{font-size:13px;font-weight:700;color:#fff;}
@@ -1148,18 +1148,26 @@ async function createUser(){
   const email=document.getElementById('new-user-email').value.trim();
   const pass=document.getElementById('new-user-pass').value;
   if(!name||!email||!pass){showToast('⚠️ Fill all fields');return;}
+  // Read these before creating the account: creating it signs the browser in as the new user.
+  const adminEmail=currentUser.email;
+  const role=document.getElementById('new-user-role')?.value||'technician';
   try{
     const cred=await auth.createUserWithEmailAndPassword(email,pass);
+    // The new account writes its own profile as 'pending' (the security rules allow nothing else).
     await db.collection('users').doc(cred.user.uid).set({
-      name,email,role:document.getElementById('new-user-role')?.value||'technician',
+      name,email,role:'pending',
       createdAt:firebase.firestore.FieldValue.serverTimestamp(),
       active:true
     });
-    await logAudit('user_created_by_admin',{name,email},null);
-    // Sign back in as admin
-    const adminEmail=currentUser.email;
+    // Sign back in as admin, then give the new account its role.
     const adminPass=prompt('Re-enter your admin password to stay signed in:');
-    if(adminPass) await auth.signInWithEmailAndPassword(adminEmail,adminPass);
+    if(!adminPass){
+      showToast('User created as pending. Sign in again and approve them from the list.');
+      return;
+    }
+    await auth.signInWithEmailAndPassword(adminEmail,adminPass);
+    await db.collection('users').doc(cred.user.uid).update({role});
+    await logAudit('user_created_by_admin',{name,email,role},null);
     showToast('✓ User created: '+name);
     document.getElementById('new-user-name').value='';
     document.getElementById('new-user-email').value='';

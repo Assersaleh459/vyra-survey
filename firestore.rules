@@ -1,0 +1,85 @@
+rules_version = '2';
+
+// Firestore security rules for the VYRA Site Survey app (app.html).
+// They mirror the roles in app.html (PERMS):
+//   admin       - everything, manages users, reads the audit log
+//   manager     - reads all surveys, changes survey status
+//   technician  - submits surveys, reads and updates the status of own surveys only
+//   pending     - signed in but not approved: can only read own profile
+// Paste this into Firebase Console > Firestore Database > Rules, then Publish.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function profilePath() {
+      return /databases/$(database)/documents/users/$(request.auth.uid);
+    }
+    function role() {
+      return signedIn() && exists(profilePath()) ? get(profilePath()).data.role : 'none';
+    }
+    function isAdmin()   { return role() == 'admin'; }
+    function isManager() { return role() == 'manager'; }
+    function isTech()    { return role() == 'technician'; }
+
+    // The one account that becomes admin on first sign-in (same as ADMIN_EMAIL in app.html).
+    function isOwnerAccount() {
+      return request.auth.token.email == 'asserhegazy@vyra-systems.com';
+    }
+    function onlyChanges(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    // ── users/{uid}: name, email, role, createdAt, active ──
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin());
+
+      // A new account creates its own profile, always as 'pending'.
+      // Only the owner account may create itself as 'admin'.
+      allow create: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.email.lower() == request.auth.token.email
+        && (request.resource.data.role == 'pending'
+            || (request.resource.data.role == 'admin' && isOwnerAccount()));
+
+      // Only an admin changes roles, and only the role field.
+      allow update: if isAdmin()
+        && onlyChanges(['role'])
+        && request.resource.data.role in ['pending', 'technician', 'manager'];
+
+      allow delete: if false;
+    }
+
+    // ── surveys/{id} ──
+    match /surveys/{id} {
+      allow read: if isAdmin() || isManager()
+        || (isTech() && resource.data.techId == request.auth.uid);
+
+      allow create: if (isAdmin() || isTech())
+        && request.resource.data.techId == request.auth.uid;
+
+      // Status changes only (the only update the app makes).
+      allow update: if (isAdmin() || isManager()
+          || (isTech() && resource.data.techId == request.auth.uid))
+        && onlyChanges(['status']);
+
+      allow delete: if isAdmin();
+    }
+
+    // ── audit/{id}: append-only log ──
+    match /audit/{id} {
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['timestamp', 'userId', 'userName', 'action', 'details', 'surveyId'])
+        && request.resource.data.timestamp == request.time;
+      allow read: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
